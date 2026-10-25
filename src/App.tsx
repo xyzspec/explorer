@@ -1,3 +1,5 @@
+import { LanguageMenu } from './ui/LanguageMenu';
+import { t, useLocale } from './i18n';
 import { GalleryShareButton } from './gallery/GalleryShareButton';
 import { galleryHomeUrl, readGalleryLink } from './gallery/galleryShareUrl';
 import { GalleryPanel } from './gallery/GalleryPanel';
@@ -152,6 +154,7 @@ function summarizeLineChanges(originalSource: string, nextSource: string): LineC
 }
 
 export default function App() {
+  useLocale();
   const [authoringSource, setAuthoringSource] = useState(INITIAL_XYZDSL);
   const assets = useSceneAssets(setAuthoringSource);
   const [remoteBaselineAppliedToEditor, setRemoteBaselineAppliedToEditor] = useState('');
@@ -869,7 +872,7 @@ export default function App() {
       return;
     }
 
-    if (hasAuthoringEdits && !window.confirm('Discard local spatial declaration edits and reset to the latest remote declarations?')) {
+    if (hasAuthoringEdits && !window.confirm(t("Discard local spatial declaration edits and reset to the latest remote declarations?"))) {
       return;
     }
 
@@ -884,20 +887,21 @@ export default function App() {
 
   return (
     <EditorLayout editing={appMode === 'editor'}>
+      <LanguageMenu />
       {galleryLink.requested && !galleryLink.document && appMode === 'viewer' ? <section className="scene-viewport gallery-unavailable">
-        <h1>Gallery document unavailable</h1><p>This link does not identify an available document.</p>
-        <button type="button" onClick={backToGallery}>Back to gallery</button>
+        <h1>{t("Gallery document unavailable")}</h1><p>{t("This link does not identify an available document.")}</p>
+        <button type="button" onClick={backToGallery}>{t("Back to gallery")}</button>
       </section> : assetError && !galleryEntry && !viewingRemote ? <section className="scene-viewport"><p role="alert">{assetError}</p></section> : <SceneRoot
         key={galleryEntry?.id ?? (viewingRemote ? 'remote' : 'draft')}
         resolveAsset={galleryEntry || viewingRemote ? undefined : assets.resolve}
         document={galleryDocument ?? (appMode === 'viewer' ? viewerDocument : document)}
         forceTour={Boolean(galleryEntry)}
         onTraverseGallery={galleryEntry && !galleryLink.requested ? traverseGallery : undefined}
-        galleryOverlay={galleryEntry && <nav className="gallery-navigation" aria-label="Gallery navigation">
-          <div aria-live="polite"><strong>{galleryEntry.title}</strong>{!galleryLink.requested && <small>{galleryIndex + 1} / {galleryDocuments.length} · Swipe from top/bottom edge</small>}</div>
-          {galleryLink.requested ? <button type="button" onClick={backToGallery}>Back to gallery</button> : <>
-          <button type="button" aria-label="Previous gallery document" disabled={galleryIndex === 0} onClick={() => traverseGallery(-1)}>↑</button>
-          <button type="button" aria-label="Next gallery document" disabled={galleryIndex === galleryDocuments.length - 1} onClick={() => traverseGallery(1)}>↓</button>
+        galleryOverlay={galleryEntry && <nav className="gallery-navigation" aria-label={t("Gallery navigation")}>
+          <div aria-live="polite"><strong>{galleryEntry.title}</strong>{!galleryLink.requested && <small>{galleryIndex + 1} / {galleryDocuments.length} {t("· Swipe from top/bottom edge")}</small>}</div>
+          {galleryLink.requested ? <button type="button" onClick={backToGallery}>{t("Back to gallery")}</button> : <>
+          <button type="button" aria-label={t("Previous gallery document")} disabled={galleryIndex === 0} onClick={() => traverseGallery(-1)}>↑</button>
+          <button type="button" aria-label={t("Next gallery document")} disabled={galleryIndex === galleryDocuments.length - 1} onClick={() => traverseGallery(1)}>↓</button>
           </>}
           <GalleryShareButton key={galleryEntry.id} document={galleryEntry} />
         </nav>}

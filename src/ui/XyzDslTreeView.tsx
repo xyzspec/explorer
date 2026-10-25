@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useMemo, useState } from 'react';
 import type { SpatialDocument } from '../model/SpatialDocument';
 import type { SpatialNode } from '../model/SpatialNode';
@@ -59,6 +60,7 @@ function TreeItem({
   onSelectNode?: (id: string) => void;
   onToggle: (id: string) => void;
 }) {
+  useLocale();
   const children = node.children ?? [];
   const hasChildren = children.length > 0;
   const isCollapsed = collapsedIds.has(node.id);
@@ -73,7 +75,7 @@ function TreeItem({
         {hasChildren ? (
           <button
             aria-expanded={!isCollapsed}
-            aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} ${displayName(node)}`}
+            aria-label={`${isCollapsed ? t("Expand") : t("Collapse")} ${displayName(node)}`}
             className="xyzdsl-tree-toggle"
             type="button"
             onClick={() => onToggle(node.id)}
@@ -92,22 +94,22 @@ function TreeItem({
         >
           <strong>{displayName(node)}</strong>
           <span>
-            {node.metadata?.viewPoint ? 'view point' : node.renderable ? node.geometry.kind : 'group'} · {node.box.width} × {node.box.height} × {node.box.depth} at ({node.box.x},{' '}
+            {node.metadata?.viewPoint ? t("view point") : node.renderable ? t(node.geometry.kind) : t('group')} · {node.box.width} × {node.box.height} × {node.box.depth} {t("at (")}{node.box.x},{' '}
             {node.box.y}, {node.box.z})
           </span>
           {node.renderable ? (
             <span className="xyzdsl-tree-object-details">
-              {geometryLabel(node)} bounding box: {node.box.width} × {node.box.height} × {node.box.depth} at ({node.box.x}, {node.box.y},{' '}
-              {node.box.z}); rotation: {rotationDegrees(node)}°
+              {geometryLabel(node)} {t("bounding box:")} {node.box.width} × {node.box.height} × {node.box.depth} {t("at (")}{node.box.x}, {node.box.y},{' '}
+              {node.box.z}{t("); rotation:")} {rotationDegrees(node)}°
             </span>
           ) : null}
         </button>
 
-        <div className="xyzdsl-tree-badges" aria-label="Spatial node metadata">
-          {lineNumber ? <em>line {lineNumber}</em> : null}
-          {node.renderable || node.metadata?.viewPoint ? null : <em>container</em>}
-          {reference ? <em>ref {reference}</em> : null}
-          {node.geometry.operation ? <em>operation {node.geometry.operation}</em> : null}
+        <div className="xyzdsl-tree-badges" aria-label={t("Spatial node metadata")}>
+          {lineNumber ? <em>{t("line")} {lineNumber}</em> : null}
+          {node.renderable || node.metadata?.viewPoint ? null : <em>{t("container")}</em>}
+          {reference ? <em>{t("ref")} {reference}</em> : null}
+          {node.geometry.operation ? <em>{t("operation")} {node.geometry.operation}</em> : null}
           {node.unionGroupId ? <em>{node.unionGroupId}</em> : null}
           {csgLabel ? <em>{csgLabel}</em> : null}
         </div>
@@ -132,6 +134,7 @@ function TreeItem({
 }
 
 export function XyzDslTreeView({ document, selectedNodeId, onSelectNode }: XyzDslTreeViewProps) {
+  useLocale();
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
   const nodeIds = useMemo(() => sortedTreeIds(document.nodes), [document.nodes]);
   const hasCollapsibleNodes = useMemo(() => hasNestedNodes(document.nodes), [document.nodes]);
@@ -159,35 +162,30 @@ export function XyzDslTreeView({ document, selectedNodeId, onSelectNode }: XyzDs
   }
 
   return (
-    <section className="xyzdsl-tree-view" aria-label="Spatial declaration tree">
+    <section className="xyzdsl-tree-view" aria-label={t("Spatial declaration tree")}>
       <div className="section-heading-row">
-        <h2>Definition tree</h2>
+        <h2>{t("Definition tree")}</h2>
         {hasCollapsibleNodes ? (
-          <div className="tree-actions" aria-label="Tree display controls">
-            <button type="button" onClick={expandAll}>
-              Expand all
-            </button>
-            <button type="button" onClick={collapseAll}>
-              Collapse all
-            </button>
+          <div className="tree-actions" aria-label={t("Tree display controls")}>
+            <button type="button" onClick={expandAll}> {t("Expand all")} </button>
+            <button type="button" onClick={collapseAll}> {t("Collapse all")} </button>
           </div>
         ) : null}
       </div>
 
       {document.nodes.length === 0 ? (
-        <p>No valid definitions yet.</p>
+        <p>{t("No valid definitions yet.")}</p>
       ) : (
         <>
           {document.csgExpressions.length > 0 ? (
-            <div className="xyzdsl-csg-summary" aria-label="Boolean composition summary">
-              <h3>Boolean composition expressions</h3>
+            <div className="xyzdsl-csg-summary" aria-label={t("Boolean composition summary")}>
+              <h3>{t("Boolean composition expressions")}</h3>
               <ul>
                 {document.csgExpressions.map((expression) => (
                   <li key={expression.id}>
                     <strong>{expression.id}</strong>
                     <span>
-                      {expression.base.geometry.kind} with {expression.operations.length} boolean operation
-                      {expression.operations.length === 1 ? '' : 's'}:{' '}
+                      {expression.base.geometry.kind} {t("with")} {expression.operations.length} {t(expression.operations.length === 1 ? 'boolean operation' : 'boolean operations')}:{' '}
                       {expression.operations.map((operation) => `${operation.op} ${operation.tool.geometry.kind}`).join(', ')}
                     </span>
                     <em>{expression.base.id}</em>

@@ -1,3 +1,7 @@
+import { beforeEach as beforeLocaleTest } from 'vitest';
+import { setLocale } from '../i18n';
+// These existing interaction assertions explicitly exercise the English UI.
+beforeLocaleTest(() => setLocale('en'));
 import { describe, expect, it } from 'vitest';
 import { transactionSummary } from './XyzDslDrawer';
 

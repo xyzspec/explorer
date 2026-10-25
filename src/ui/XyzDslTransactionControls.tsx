@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useState, type ChangeEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { TransactionRange } from '../transactions/types';
 
@@ -47,6 +48,7 @@ export function XyzDslTransactionControls({
   onReload,
   onUseTip,
 }: XyzDslTransactionControlsProps) {
+  useLocale();
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
   const sliderMax = Math.max(tipHeight ?? 0, range.startHeight, range.endHeight, 1);
   const lowerHeight = Math.min(range.startHeight, range.endHeight);
@@ -165,22 +167,22 @@ export function XyzDslTransactionControls({
   }
 
   return (
-    <section className="transaction-controls" aria-label="Spatial transaction loader">
+    <section className="transaction-controls" aria-label={t("Spatial transaction loader")}>
       <div className="section-heading-row">
-        <h2>Spatial transactions</h2>
+        <h2>{t("Spatial transactions")}</h2>
         <button type="button" disabled={loading || !publicKey.trim()} onClick={onReload}>
-          {loading ? 'Loading…' : 'Reload'}
+          {loading ? t("Loading…") : t("Reload")}
         </button>
       </div>
 
       <details className="transaction-config">
-        <summary>Transaction source</summary>
+        <summary>{t("Transaction source")}</summary>
 
         <label>
-          <span>Public key</span>
+          <span>{t("Public key")}</span>
           <input
             value={publicKey}
-            placeholder="Enter a public key"
+            placeholder={t("Enter a public key")}
             onChange={(event) => {
               setCopyStatus('idle');
               onPublicKeyChange(event.target.value);
@@ -189,23 +191,21 @@ export function XyzDslTransactionControls({
         </label>
 
         <div className="transaction-share-row">
-          <button type="button" disabled={!publicKeyShareUrl} onClick={copyShareLink}>
-            Copy public key link
-          </button>
+          <button type="button" disabled={!publicKeyShareUrl} onClick={copyShareLink}> {t("Copy public key link")} </button>
           <small>
             {copyStatus === 'copied'
-              ? 'Share link copied.'
+              ? t("Share link copied.")
               : copyStatus === 'error'
-                ? 'Unable to copy link.'
+                ? t("Unable to copy link.")
                 : publicKeyShareUrl
-                  ? 'Encodes this public key into the URL.'
-                  : 'Enter a public key to create a share link.'}
+                  ? t("Encodes this public key into the URL.")
+                  : t("Enter a public key to create a share link.")}
           </small>
         </div>
 
         <div className="transaction-range-grid">
           <label>
-            <span>Start height</span>
+            <span>{t("Start height")}</span>
             <input
               type="number"
               min={0}
@@ -214,7 +214,7 @@ export function XyzDslTransactionControls({
             />
           </label>
           <label>
-            <span>End height</span>
+            <span>{t("End height")}</span>
             <input
               type="number"
               min={0}
@@ -223,7 +223,7 @@ export function XyzDslTransactionControls({
             />
           </label>
           <label>
-            <span>Limit</span>
+            <span>{t("Limit")}</span>
             <input
               type="number"
               min={1}
@@ -235,13 +235,13 @@ export function XyzDslTransactionControls({
 
         <div className="transaction-tip-row">
           <button type="button" disabled={tipLoading} onClick={onUseTip}>
-            {tipLoading ? 'Loading tip…' : 'Set start to tip'}
+            {tipLoading ? t("Loading tip…") : t("Set start to tip")}
           </button>
-          <span>{tipHeight === undefined ? 'Tip unknown' : `Tip: ${tipHeight}`}</span>
+          <span>{tipHeight === undefined ? t("Tip unknown") : t("Tip: {height}", { height: tipHeight })}</span>
         </div>
 
-        <div className="transaction-range-slider" aria-label="Height window range">
-          <span>Height window</span>
+        <div className="transaction-range-slider" aria-label={t("Height window range")}>
+          <span>{t("Height window")}</span>
           <div className="dual-range-slider" onPointerDown={handleTrackPointerDown}>
             <div className="dual-range-track" />
             <div
@@ -249,7 +249,7 @@ export function XyzDslTransactionControls({
               style={{ left: `${lowerPercent}%`, right: `${100 - upperPercent}%` }}
             />
             <button
-              aria-label="End height"
+              aria-label={t("End height")}
               aria-valuemax={sliderMax}
               aria-valuemin={0}
               aria-valuenow={lowerHeight}
@@ -261,7 +261,7 @@ export function XyzDslTransactionControls({
               onPointerDown={(event) => handleThumbPointerDown('lower', event)}
             />
             <button
-              aria-label="Start height"
+              aria-label={t("Start height")}
               aria-valuemax={sliderMax}
               aria-valuemin={0}
               aria-valuenow={upperHeight}
@@ -278,10 +278,9 @@ export function XyzDslTransactionControls({
       </details>
 
       <p className="transaction-status">
-        {transactionCount} fetched · {acceptedCount} mapped · {secondaryTenantCount} secondary tenant{secondaryTenantCount === 1 ? '' : 's'} · {rejectedCount} rejected
-      </p>
-      {error ? <p className="transaction-error">{error}</p> : null}
-      {tipError ? <p className="transaction-error">{tipError}</p> : null}
+        {transactionCount} {t("fetched ·")} {acceptedCount} {t("mapped ·")} {t(secondaryTenantCount === 1 ? '{count} secondary tenant' : '{count} secondary tenants', { count: secondaryTenantCount })} · {rejectedCount} {t("rejected")} </p>
+      {error ? <p className="transaction-error">{t(error)}</p> : null}
+      {tipError ? <p className="transaction-error">{t(tipError)}</p> : null}
     </section>
   );
 }

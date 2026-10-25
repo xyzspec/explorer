@@ -1,4 +1,8 @@
 // @vitest-environment jsdom
+import { beforeEach as beforeLocaleTest } from 'vitest';
+import { setLocale } from '../i18n';
+// These existing interaction assertions explicitly exercise the English UI.
+beforeLocaleTest(() => setLocale('en'));
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { INITIAL_GALLERY } from './gallery';

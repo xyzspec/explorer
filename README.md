@@ -334,3 +334,17 @@ for exact dimensions, fractional sizing, omission rules, and the full tiling exa
 
 The complete [bedroom and annex scene](docs/examples/bedroom-grid.xyzdsl) migrates
 the furniture, lighting, viewpoints, tiling, and openings to one gridded enclosure.
+
+## UI languages
+
+The web UI defaults to French. The globe menu in the top-right corner switches
+between Français and English without reloading the scene or clearing editor work.
+The choice is saved per browser/origin in `localStorage` under `xyzdsl-language`
+and synchronizes across open tabs. If storage is unavailable, switching still
+works for the current session. Missing or unsupported preferences use French.
+
+UI messages are maintained in `src/i18n/fr.ts` with English source text as keys.
+Components displaying translations subscribe with `useLocale()` and render with
+`t(message, values)`. Keep document titles, authored content, identifiers, XYZDSL
+syntax, and raw parser/server diagnostics intact; translate presentation labels
+rather than protocol or editor values.

@@ -1675,3 +1675,29 @@ button {
 .gallery-share input { width: 100%; min-width: 0; }
 .gallery-navigation { flex-wrap: wrap; }
 .gallery-unavailable { padding: 5rem 1rem 1rem; }
+
+/* Language choice stays available in both viewer and editor, including mobile. */
+.language-menu {
+  position: fixed;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  min-height: 44px;
+  padding: 0 .65rem;
+  border: 1px solid #ffffff26;
+  border-radius: 999px;
+  background: #151820df;
+  color: #dbe4ef;
+  font-size: .7rem;
+}
+.language-menu:hover { background: #28303b; }
+.language-menu:focus-within { outline: 2px solid #93c5fd; outline-offset: 3px; }
+.language-menu select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.mode-controls { right: 6rem; }
+.gallery-navigation { max-width: calc(100% - 19rem); }
+@media (max-width: 640px) {
+  .gallery-navigation { max-width: calc(100% - 7rem); }
+}

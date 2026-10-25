@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useMemo, useState, type ReactNode } from 'react';
 import { createSpatialDocument } from '../model/createSpatialDocument';
 import { SceneRoot } from '../scene/SceneRoot';
@@ -14,6 +15,7 @@ import { useMobileViewport } from './useMobileViewport';
 
 /** Controlled editor: hosts own source persistence and asset policy. */
 export function VisualEditor({ source, onChange, assetsPanel, assetError }: { source: string; onChange: (source: string) => void; assetsPanel?: ReactNode; assetError?: string }) {
+  useLocale();
  const mobile = useMobileViewport();
  const [requestedMode, setMode] = useState<'viewer' | 'editor'>();
  const mode = requestedMode ?? (mobile ? 'viewer' : 'editor');
@@ -39,10 +41,10 @@ export function VisualEditor({ source, onChange, assetsPanel, assetError }: { so
  const linearStep = linearStepChoice === 'auto' ? node ? linearTransformStepForNode(node) : .01 : linearStepChoice;
  return <EditorLayout editing={mode === 'editor'}>
  {assetError ? <section className="scene-viewport"><p role="alert">{assetError}</p></section> : <SceneRoot document={document} selectedNodeId={sceneHighlightIdForNode(document.nodes, highlighted ?? node)} onSelectNode={id => select(id)} editorMode={mode === 'editor'} selectedNodeCanEdit={canEdit} editorLinearStep={linearStep} editorRotationStep={rotationStep} linearStepChoice={linearStepChoice} onLinearStepChoiceChange={setLinearStepChoice} onRotationStepChange={setRotationStep} onMoveNode={move} onResizeNode={resize} onRotateNode={rotate} onCreateNode={create}/>}
- <WorkspacePanel mode={mode} open onModeChange={setMode} activeTab={tab} onTabChange={setTab} tabs={[{id:'objects',label:'Objects'},{id:'source',label:'Source'},{id:'assets',label:'Assets'},{id:'problems',label:'Problems',count:document.diagnostics.length}]}>
+ <WorkspacePanel mode={mode} open onModeChange={setMode} activeTab={tab} onTabChange={setTab} tabs={[{id:'objects',label:t("Objects")},{id:'source',label:t("Source")},{id:'assets',label:t("Assets")},{id:'problems',label:t("Problems"),count:document.diagnostics.length}]}>
  {tab === 'objects' && <div className="object-workspace"><XyzDslTreeView document={document} selectedNodeId={node?.id} onSelectNode={id => select(id,true)}/><SelectedNodeInspector node={node} canEdit={canEdit} selectionPath={findNodePathById(document.nodes,node?.id)} onClearSelection={() => select(undefined)} onMove={move} onResize={resize} onRotate={rotate} onPathNodeSelect={id => setLine(lineNumberForNode(findNodeById(document.nodes,id)))} onPropertyChange={(key,value) => edit((s,l) => updateDeclarationProperty(s,l,key,value))} onSelectNode={id => select(id,true)} linearStepChoice={linearStepChoice} rotationStep={rotationStep} onLinearStepChoiceChange={setLinearStepChoice} onRotationStepChange={setRotationStep}/></div>}
- {tab === 'source' && <div className="drawer-tool-section"><XyzDslEditor value={source} description="Edit local spatial declarations. Bare path numbers are metres; d, c, and m use decimetres, centimetres, and millimetres." onChange={onChange} actions={<button type="button" onClick={() => { const url = URL.createObjectURL(new Blob([source],{type:'text/plain'})); const link = window.document.createElement('a'); link.href=url; link.download='scene.xyz'; link.click(); setTimeout(() => URL.revokeObjectURL(url),1000); }}>Save scene.xyz</button>}/></div>}
+ {tab === 'source' && <div className="drawer-tool-section"><XyzDslEditor value={source} description={t("Edit local spatial declarations. Bare path numbers are metres; d, c, and m use decimetres, centimetres, and millimetres.")} onChange={onChange} actions={<button type="button" onClick={() => { const url = URL.createObjectURL(new Blob([source],{type:'text/plain'})); const link = window.document.createElement('a'); link.href=url; link.download='scene.xyz'; link.click(); setTimeout(() => URL.revokeObjectURL(url),1000); }}>{t("Save scene.xyz")}</button>}/></div>}
  {tab === 'assets' && <div className="drawer-tool-section">{assetsPanel}</div>}
- {tab === 'problems' && <div className="drawer-tool-section problems-panel">{document.diagnostics.length ? document.diagnostics.map((d,i) => <p key={i}>Line {d.line}: {d.message}</p>) : <p>No problems detected.</p>}</div>}
+ {tab === 'problems' && <div className="drawer-tool-section problems-panel">{document.diagnostics.length ? document.diagnostics.map((d,i) => <p key={i}>{t("Line")} {d.line}: {d.message}</p>) : <p>{t("No problems detected.")}</p>}</div>}
  </WorkspacePanel></EditorLayout>;
 }

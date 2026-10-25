@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import type { ChangeEvent, ReactNode } from 'react';
 
 interface XyzDslEditorProps {
@@ -9,6 +10,7 @@ interface XyzDslEditorProps {
 }
 
 export function XyzDslEditor({ value, description, status, actions, onChange }: XyzDslEditorProps) {
+  useLocale();
   function handleChange(event: ChangeEvent<HTMLTextAreaElement>) {
     onChange(event.target.value);
   }
@@ -16,7 +18,7 @@ export function XyzDslEditor({ value, description, status, actions, onChange }: 
   return (
     <label className="xyzdsl-editor">
       <span className="xyzdsl-editor-heading">
-        <span>Spatial declarations</span>
+        <span>{t("Spatial declarations")}</span>
         {actions ? <span className="xyzdsl-editor-actions">{actions}</span> : null}
       </span>
       <small>{description}</small>

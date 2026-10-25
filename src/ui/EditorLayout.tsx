@@ -1,6 +1,8 @@
+import { t, useLocale } from '../i18n';
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 export function EditorLayout({ editing, children }: { editing: boolean; children: ReactNode }) {
+  useLocale();
   const shell = useRef<HTMLElement>(null);
   const [mobile, setMobile] = useState(false);
   const [extent, setExtent] = useState(0);
@@ -25,7 +27,7 @@ export function EditorLayout({ editing, children }: { editing: boolean; children
     <main ref={shell} className={`app-shell app-shell--${editing ? 'editor' : 'viewer'}`} style={{ '--workspace-size': `${size}px` } as CSSProperties}>
       {children}
       {editing && <div className="workspace-divider" role="separator" tabIndex={0}
-        aria-label="Resize workspace panel" aria-orientation={mobile ? 'horizontal' : 'vertical'}
+        aria-label={t("Resize workspace panel")} aria-orientation={mobile ? 'horizontal' : 'vertical'}
         aria-valuemin={Math.round(minimum)} aria-valuemax={Math.round(maximum)} aria-valuenow={Math.round(size)}
         onPointerDown={event => {
           event.preventDefault();

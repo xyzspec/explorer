@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useGallerySwipe } from '../gallery/useGallerySwipe';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -55,6 +56,7 @@ const DEFAULT_ORBIT_TARGET: [number, number, number] = [0.6, 0.5, 0.4];
 const DEFAULT_CAMERA_POSITION: [number, number, number] = [1.4, 1.1, 1.8];
 
 export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery, document: spatialDocument, selectedNodeId, onSelectNode, editorMode, selectedNodeCanEdit, editorLinearStep, editorRotationStep, linearStepChoice, onLinearStepChoiceChange, onRotationStepChange, onMoveNode, onResizeNode, onRotateNode, onCreateNode }: SceneRootProps) {
+  useLocale();
   const gallerySwipe = useGallerySwipe(onTraverseGallery);
   const [quality] = useState(initialQuality);
   const [safe, setSafe] = useState(readSafeRendering);
@@ -127,7 +129,7 @@ export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery
       shadows={!safe}
       gl={{ antialias: quality !== 'low' && !safe }}
       dpr={[1, safe ? 1 : QUALITY[quality].dpr]}
-      fallback={<div className="scene-preparation" role="alert">This browser could not start WebGL. Try another browser or device.</div>}
+      fallback={<div className="scene-preparation" role="alert">{t("This browser could not start WebGL. Try another browser or device.")}</div>}
       onCreated={({ invalidate, gl }) => { invalidateRef.current = invalidate; rendererRef.current = gl; }}
       onPointerMissed={() => {
         if (cameraMode === 'orbit') onSelectNode?.(undefined);
@@ -165,10 +167,10 @@ export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery
       </ModelRuntime>
     </Canvas>
     {(preparation === 'error' || preparation === 'context-lost') && <div className={preparation === 'error' ? 'scene-model-error' : 'scene-preparation'} role={preparation === 'error' ? 'alert' : 'status'} aria-live="polite" data-model-preparation={preparation === 'context-lost' ? preparation : undefined} data-model-error={preparation === 'error' ? true : undefined}>
-      <span>{preparation === 'context-lost' ? 'Graphics were interrupted. Recovering with reduced graphics…' : 'Some models could not be loaded. You can keep exploring or retry.'}</span>
+      <span>{preparation === 'context-lost' ? t("Graphics were interrupted. Recovering with reduced graphics…") : t("Some models could not be loaded. You can keep exploring or retry.")}</span>
       {import.meta.env.DEV && preparation === 'error' && assetStatus?.errors.map(error => <small key={error}>{error}</small>)}
-      {preparation === 'error' && <button onClick={() => setModelRetry(value => value + 1)}>Retry models</button>}
-      {preparation === 'context-lost' && <button onClick={retryRenderer}>Restart viewer</button>}
+      {preparation === 'error' && <button onClick={() => setModelRetry(value => value + 1)}>{t("Retry models")}</button>}
+      {preparation === 'context-lost' && <button onClick={retryRenderer}>{t("Restart viewer")}</button>}
     </div>}
     </RendererBoundary>
     {diagnostics && <button style={{ position: 'absolute', bottom: 100, left: 12, zIndex: 30 }} onClick={() => {
@@ -176,27 +178,27 @@ export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery
       if (!extension) return;
       extension.loseContext();
       setTimeout(() => extension.restoreContext(), 1000);
-    }}>Test graphics recovery</button>}
+    }}>{t("Test graphics recovery")}</button>}
     {mobile ? point && points.length > 1 && (
-      <nav className="view-point-overlays" aria-label="View point traversal">
-        <span className="view-point-status" role="status">View point {(pointIndex ?? 0) + 1} of {points.length}</span>
-        <button type="button" aria-label="Previous view point" onClick={() => tour.traverse(-1)}>‹</button>
-        <button type="button" aria-label="Next view point" onClick={() => tour.traverse(1)}>›</button>
+      <nav className="view-point-overlays" aria-label={t("View point traversal")}>
+        <span className="view-point-status" role="status">{t("View point")} {(pointIndex ?? 0) + 1} {t("of")} {points.length}</span>
+        <button type="button" aria-label={t("Previous view point")} onClick={() => tour.traverse(-1)}>‹</button>
+        <button type="button" aria-label={t("Next view point")} onClick={() => tour.traverse(1)}>›</button>
       </nav>
     ) : (
-    <section className={`camera-controls camera-controls--${cameraMode}`} aria-label="Camera navigation">
-      {import.meta.env.DEV && assetStatus && <small aria-label="Model resource usage">{assetStatus.ready}/{assetStatus.total} models · {(assetStatus.bytes / 1048576).toFixed(1)} MiB estimated · {assetStatus.loading} loading</small>}
+    <section className={`camera-controls camera-controls--${cameraMode}`} aria-label={t("Camera navigation")}>
+      {import.meta.env.DEV && assetStatus && <small aria-label={t("Model resource usage")}>{assetStatus.ready}/{assetStatus.total} {t("models ·")} {(assetStatus.bytes / 1048576).toFixed(1)} {t("MiB estimated ·")} {assetStatus.loading} {t("loading")}</small>}
       {point ? <>
-        <div role="group" aria-label="View point traversal">
-          <button type="button" disabled={points.length < 2} onClick={() => tour.traverse(-1)}>Previous</button>
-          <span role="status">View point {(pointIndex ?? 0) + 1} / {points.length}</span>
-          <button type="button" disabled={points.length < 2} onClick={() => tour.traverse(1)}>Next</button>
-          {tour.exit && <button type="button" onClick={tour.exit}>Exit tour</button>}
+        <div role="group" aria-label={t("View point traversal")}>
+          <button type="button" disabled={points.length < 2} onClick={() => tour.traverse(-1)}>{t("Previous")}</button>
+          <span role="status">{t("View point")} {(pointIndex ?? 0) + 1} / {points.length}</span>
+          <button type="button" disabled={points.length < 2} onClick={() => tour.traverse(1)}>{t("Next")}</button>
+          {tour.exit && <button type="button" onClick={tour.exit}>{t("Exit tour")}</button>}
         </div>
-        <p>Drag to look around · Previous/Next to traverse · ↑/↓ previous/next{tour.exit ? ' · Esc exit.' : onTraverseGallery ? ' · Swipe from the top/bottom edge to change gallery documents.' : ''}</p>
+        <p>{t("Drag to look around · Previous/Next to traverse · ↑/↓ previous/next")}{tour.exit ? t(" · Esc exit.") : onTraverseGallery ? t(" · Swipe from the top/bottom edge to change gallery documents.") : ''}</p>
       </> : <>
-        {points.length > 0 && <button type="button" onClick={() => tour.start(orbitRef.current?.target.toArray() as [number, number, number] | undefined)}>Start tour · {points.length} view points</button>}
-        <p>{editorMode ? 'Ctrl/Cmd + wheel rotate · +/− resize all · X/Y/Z resize axis · Shift decreases · [ step fine/coarse · ] angle fine/coarse · ' : ''}Cmd/Ctrl + click to select</p>
+        {points.length > 0 && <button type="button" onClick={() => tour.start(orbitRef.current?.target.toArray() as [number, number, number] | undefined)}>{t("Start tour ·")} {points.length} {t("view points")}</button>}
+        <p>{editorMode ? t("Ctrl/Cmd + wheel rotate \u00b7 +/\u2212 resize all \u00b7 X/Y/Z resize axis \u00b7 Shift decreases \u00b7 [ step fine/coarse \u00b7 ] angle fine/coarse \u00b7") + " " : ''}{t("Cmd/Ctrl + click to select")}</p>
       </>}
     </section>
     )}

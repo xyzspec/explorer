@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { WorkspacePanel } from './WorkspacePanel';
 import type { ReactNode } from 'react';
 import type { SpatialDocument } from '../model/SpatialDocument';
@@ -22,38 +23,38 @@ function describeAuthoringState(
   remoteBaselineChanged: boolean,
 ): string {
   if (!hasRemoteBaseline) {
-    return `Editing local spatial declarations. Use bare path numbers for metres, or d, c, and m suffixes for decimetres, centimetres, and millimetres (${UNIT_SCALE_DESCRIPTION}).`;
+    return t("Editing local spatial declarations. Use bare path numbers for metres, or d, c, and m suffixes for decimetres, centimetres, and millimetres ({units}).", { units: UNIT_SCALE_DESCRIPTION });
   }
 
   if (remoteBaselineChanged && hasAuthoringEdits) {
-    return 'Remote declarations changed after local edits. Keep editing, or reset to the latest remote state.';
+    return t("Remote declarations changed after local edits. Keep editing, or reset to the latest remote state.");
   }
 
   if (hasAuthoringEdits) {
-    return 'Local draft differs from the loaded remote declarations. Edit, remove, or add declarations below.';
+    return t("Local draft differs from the loaded remote declarations. Edit, remove, or add declarations below.");
   }
 
-  return 'Loaded from remote transactions. Edit, remove, or add declarations below.';
+  return t("Loaded from remote transactions. Edit, remove, or add declarations below.");
 }
 
 function summarizeChanges({ added, removed }: { added: number; removed: number }): string {
   const parts: string[] = [];
 
   if (added > 0) {
-    parts.push(`${added} added`);
+    parts.push(t("{count} added", { count: added }));
   }
 
   if (removed > 0) {
-    parts.push(`${removed} removed`);
+    parts.push(t("{count} removed", { count: removed }));
   }
 
-  return parts.length > 0 ? parts.join(' · ') : 'No line changes';
+  return parts.length > 0 ? parts.join(' · ') : t("No line changes");
 }
 
 // Kept exported for the drawer's existing focused summary tests.
 export function transactionSummary(transaction: import('../transactions/types').XyzDslTransaction): string {
   const normalized = normalizeXyzDslTransaction(transaction);
-  return [normalized.from ? `from ${normalized.from}` : undefined, `to ${normalized.to}`, normalized.memo.trim() ? `memo ${normalized.memo.trim()}` : undefined]
+  return [normalized.from ? t("from {address}", { address: normalized.from }) : undefined, t("to {address}", { address: normalized.to }), normalized.memo.trim() ? `memo ${normalized.memo.trim()}` : undefined]
     .filter(Boolean)
     .join(' · ');
 }
@@ -65,13 +66,13 @@ function renderAuthoringStatus(
   authoringChangeSummary: { added: number; removed: number },
 ): ReactNode {
   if (!hasRemoteBaseline) {
-    return <em className="xyzdsl-status-badge">Local sample</em>;
+    return <em className="xyzdsl-status-badge">{t("Local sample")}</em>;
   }
 
   if (remoteBaselineChanged && hasAuthoringEdits) {
     return (
       <>
-        <em className="xyzdsl-status-badge xyzdsl-status-badge-warning">Remote changed</em>
+        <em className="xyzdsl-status-badge xyzdsl-status-badge-warning">{t("Remote changed")}</em>
         <span>{summarizeChanges(authoringChangeSummary)}</span>
       </>
     );
@@ -80,13 +81,13 @@ function renderAuthoringStatus(
   if (hasAuthoringEdits) {
     return (
       <>
-        <em className="xyzdsl-status-badge xyzdsl-status-badge-warning">Modified locally</em>
+        <em className="xyzdsl-status-badge xyzdsl-status-badge-warning">{t("Modified locally")}</em>
         <span>{summarizeChanges(authoringChangeSummary)}</span>
       </>
     );
   }
 
-  return <em className="xyzdsl-status-badge xyzdsl-status-badge-success">Remote baseline loaded</em>;
+  return <em className="xyzdsl-status-badge xyzdsl-status-badge-success">{t("Remote baseline loaded")}</em>;
 }
 
 interface XyzDslDrawerProps {
@@ -200,15 +201,16 @@ export function XyzDslDrawer({
   onLinearStepChoiceChange,
   onRotationStepChange,
 }: XyzDslDrawerProps) {
+  useLocale();
   const [activeTab, setActiveTab] = usePersistentState<DrawerTab>('xyzdsl-drawer-active-tab', 'objects');
   const problemCount = document.diagnostics.length + rejectedTransactions.length;
   const tabs: { id: DrawerTab; label: string; count?: number }[] = [
-    ...(galleryPanel ? [{ id: 'gallery' as const, label: 'Gallery' }] : []),
-    { id: 'objects', label: 'Objects' },
-    { id: 'source', label: 'Source' },
-    { id: 'assets', label: 'Assets' },
-    { id: 'data', label: 'Data' },
-    { id: 'problems', label: 'Problems', count: problemCount },
+    ...(galleryPanel ? [{ id: 'gallery' as const, label: t("Gallery") }] : []),
+    { id: 'objects', label: t("Objects") },
+    { id: 'source', label: t("Source") },
+    { id: 'assets', label: t("Assets") },
+    { id: 'data', label: t("Data") },
+    { id: 'problems', label: t("Problems"), count: problemCount },
   ];
   return (
     <WorkspacePanel mode={appMode} open={isOpen} allowModeSwitch={allowModeSwitch} onModeChange={onModeChange} title="xyzSpec" tabs={tabs} activeTab={activeTab} onTabChange={tab => setActiveTab(tab as DrawerTab)}>
@@ -268,9 +270,7 @@ export function XyzDslDrawer({
 
           {activeTab === 'source' ? <div className="drawer-tool-section"><XyzDslEditor
             actions={
-              <button type="button" disabled={!hasRemoteBaseline || !hasAuthoringEdits} onClick={onResetToRemote}>
-                Reset to remote
-              </button>
+              <button type="button" disabled={!hasRemoteBaseline || !hasAuthoringEdits} onClick={onResetToRemote}> {t("Reset to remote")} </button>
             }
             description={describeAuthoringState(hasRemoteBaseline, hasAuthoringEdits, remoteBaselineChanged)}
             status={renderAuthoringStatus(
@@ -285,24 +285,24 @@ export function XyzDslDrawer({
 
           {mappedTransactionSource.trim().length > 0 ? (
             <details className="remote-baseline-reference">
-              <summary>Original remote declarations</summary>
+              <summary>{t("Original remote declarations")}</summary>
               <label className="xyzdsl-editor xyzdsl-editor-readonly">
-                <span>Mapped spatial declarations</span>
-                <small>Current remote baseline used for reset.</small>
+                <span>{t("Mapped spatial declarations")}</span>
+                <small>{t("Current remote baseline used for reset.")}</small>
                 <textarea spellCheck={false} value={mappedTransactionSource} wrap="off" readOnly />
               </label>
             </details>
           ) : null}</div> : null}
 
           {activeTab === 'problems' ? <div className="drawer-tool-section problems-panel">
-          {problemCount === 0 ? <p className="empty-panel-message">No problems detected.</p> : null}
+          {problemCount === 0 ? <p className="empty-panel-message">{t("No problems detected.")}</p> : null}
           {document.diagnostics.length > 0 ? (
-            <details className="diagnostics" aria-label="Spatial declaration diagnostics">
-              <summary>Diagnostics</summary>
+            <details className="diagnostics" aria-label={t("Spatial declaration diagnostics")}>
+              <summary>{t("Diagnostics")}</summary>
               <ul>
                 {document.diagnostics.map((diagnostic, index) => (
                   <li key={`${diagnostic.line}-${index}`}>
-                    <strong>Line {diagnostic.line}:</strong> {diagnostic.message}
+                    <strong>{t("Line")} {diagnostic.line}:</strong> {diagnostic.message}
                   </li>
                 ))}
               </ul>
@@ -310,8 +310,8 @@ export function XyzDslDrawer({
           ) : null}
 
           {rejectedTransactions.length > 0 ? (
-            <details className="diagnostics" aria-label="Spatial transaction diagnostics">
-              <summary>Spatial transaction diagnostics</summary>
+            <details className="diagnostics" aria-label={t("Spatial transaction diagnostics")}>
+              <summary>{t("Spatial transaction diagnostics")}</summary>
               <ul>
                 {rejectedTransactions.map((rejection) => (
                   <li key={rejection.id}>

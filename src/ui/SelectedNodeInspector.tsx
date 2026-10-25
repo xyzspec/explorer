@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useEffect, useRef, useState } from 'react';
 import type { AxisName, XyzDslGeometryKind } from '../xyzdsl/types';
 import type { SpatialNode } from '../model/SpatialNode';
@@ -52,6 +53,7 @@ function TransformValueInput({ label, value, step, disabled, onCommit }: {
   disabled: boolean;
   onCommit: (delta: number) => void;
 }) {
+  useLocale();
   const [draft, setDraft] = useState(String(value));
   const [editing, setEditing] = useState(false);
   const cancelNextBlur = useRef(false);
@@ -110,12 +112,13 @@ export function SelectedNodeInspector({
   onLinearStepChoiceChange,
   onRotationStepChange,
 }: SelectedNodeInspectorProps) {
+  useLocale();
   if (!node) {
     return (
-      <section className="selected-node-inspector is-empty" aria-label="Object properties">
+      <section className="selected-node-inspector is-empty" aria-label={t("Object properties")}>
         <div className="inspector-empty-icon" aria-hidden="true">◇</div>
-        <strong>No object selected</strong>
-        <p>Select an object in the scene or outline to inspect its properties.</p>
+        <strong>{t("No object selected")}</strong>
+        <p>{t("Select an object in the scene or outline to inspect its properties.")}</p>
       </section>
     );
   }
@@ -125,29 +128,29 @@ export function SelectedNodeInspector({
   const rotation = rotationDegreesForInspector(node.localTransform?.rotation ?? node.transform.rotation);
   const linearStep = linearStepChoice === 'auto' ? linearTransformStepForNode(node) : linearStepChoice;
   const transforms = [
-    { label: 'Position', values: [node.box.x, node.box.y, node.box.z], step: linearStep, onStep: onMove, unit: 'units' },
-    { label: 'Size', values: [node.box.width, node.box.height, node.box.depth], step: linearStep, onStep: onResize, unit: 'units' },
-    { label: 'Rotation', values: rotation, step: rotationStep, onStep: onRotate, unit: 'degrees' },
+    { label: t("Position"), values: [node.box.x, node.box.y, node.box.z], step: linearStep, onStep: onMove, unit: t('units') },
+    { label: t("Size"), values: [node.box.width, node.box.height, node.box.depth], step: linearStep, onStep: onResize, unit: t('units') },
+    { label: t("Rotation"), values: rotation, step: rotationStep, onStep: onRotate, unit: t('degrees') },
   ];
 
   return (
-    <section className="selected-node-inspector" aria-label="Object properties">
+    <section className="selected-node-inspector" aria-label={t("Object properties")}>
       <div className="section-heading-row inspector-heading">
         <div>
-          <h2>Properties</h2>
+          <h2>{t("Properties")}</h2>
           <p title={displayName(node)}>{displayName(node)}</p>
         </div>
-        <button className="icon-button" type="button" aria-label="Clear object selection" title="Clear selection" onClick={onClearSelection}>×</button>
+        <button className="icon-button" type="button" aria-label={t("Clear object selection")} title={t("Clear selection")} onClick={onClearSelection}>×</button>
       </div>
 
       <div className="inspector-facts">
-        <span>{node.metadata?.viewPoint ? 'view point' : node.renderable ? (node.model?.source ? 'model' : node.geometry.kind) : 'group'}</span>
-        <span>line {lineNumber ?? 'unknown'}</span>
-        {!canEdit ? <span>read only</span> : null}
+        <span>{node.metadata?.viewPoint ? t("view point") : node.renderable ? (node.model?.source ? t('model') : t(node.geometry.kind)) : t('group')}</span>
+        <span>{t("line")} {lineNumber ?? t('unknown')}</span>
+        {!canEdit ? <span>{t("read only")}</span> : null}
       </div>
 
       {selectionPath.length > 1 ? (
-        <nav className="inspector-selection-path" aria-label="Selection hierarchy">
+        <nav className="inspector-selection-path" aria-label={t("Selection hierarchy")}>
           <ol>
             {selectionPath.map((pathNode, index) => (
               <li key={pathNode.id}>
@@ -161,18 +164,16 @@ export function SelectedNodeInspector({
         </nav>
       ) : null}
 
-      {!canEdit ? <p className="inspector-warning">This declaration cannot be rewritten directly. Properties are shown for reference.</p> : null}
+      {!canEdit ? <p className="inspector-warning">{t("This declaration cannot be rewritten directly. Properties are shown for reference.")}</p> : null}
 
       <div className="inspector-section-heading">
-        <strong>Transform</strong>
-        <label>
-          Step
-          <select
-            aria-label="Linear transform step"
+        <strong>{t("Transform")}</strong>
+        <label> {t("Step")} <select
+            aria-label={t("Linear transform step")}
             value={linearStepChoice}
             onChange={(event) => onLinearStepChoiceChange(event.target.value === 'auto' ? 'auto' : Number(event.target.value) as LinearStepChoice)}
           >
-            <option value="auto">Auto ({linearStep} m)</option>
+            <option value="auto">{t("Auto (")}{linearStep} m)</option>
             <option value="0.001">1 mm</option>
             <option value="0.01">1 cm</option>
             <option value="0.1">1 dm</option>
@@ -180,10 +181,8 @@ export function SelectedNodeInspector({
             <option value="10">10 m</option>
           </select>
         </label>
-        <label>
-          Angle
-          <select
-            aria-label="Rotation step"
+        <label> {t("Angle")} <select
+            aria-label={t("Rotation step")}
             value={rotationStep}
             onChange={(event) => onRotationStepChange(Number(event.target.value) as RotationStep)}
           >
@@ -201,33 +200,33 @@ export function SelectedNodeInspector({
               <div className="inspector-transform-row" key={axis}>
                 <span className={`axis axis-${axis}`}>{axis.toUpperCase()}</span>
                 <TransformValueInput
-                  label={`${transform.label} ${axis.toUpperCase()} value`}
+                  label={t("{label} {axis} value", { label: transform.label, axis: axis.toUpperCase() })}
                   value={transform.values[index]}
                   step={transform.step}
                   disabled={!canEdit}
                   onCommit={(delta) => transform.onStep(axis, delta)}
                 />
-                <PressAndHoldButton disabled={!canEdit} aria-label={`Decrease ${transform.label.toLowerCase()} ${axis.toUpperCase()} by ${transform.step} ${transform.unit}`} onActivate={() => transform.onStep(axis, -transform.step)}>−</PressAndHoldButton>
-                <PressAndHoldButton disabled={!canEdit} aria-label={`Increase ${transform.label.toLowerCase()} ${axis.toUpperCase()} by ${transform.step} ${transform.unit}`} onActivate={() => transform.onStep(axis, transform.step)}>+</PressAndHoldButton>
+                <PressAndHoldButton disabled={!canEdit} aria-label={t("Decrease {label} {axis} by {step} {unit}", { label: transform.label.toLowerCase(), axis: axis.toUpperCase(), step: transform.step, unit: transform.unit })} onActivate={() => transform.onStep(axis, -transform.step)}>−</PressAndHoldButton>
+                <PressAndHoldButton disabled={!canEdit} aria-label={t("Increase {label} {axis} by {step} {unit}", { label: transform.label.toLowerCase(), axis: axis.toUpperCase(), step: transform.step, unit: transform.unit })} onActivate={() => transform.onStep(axis, transform.step)}>+</PressAndHoldButton>
               </div>
             ))}
           </div>
         ))}
       </div>
 
-      <div className="inspector-section-heading"><strong>Appearance</strong></div>
+      <div className="inspector-section-heading"><strong>{t("Appearance")}</strong></div>
       <div className="inspector-fields">
-        {node.model?.source ? <label>Model<input disabled type="text" value={node.model.source} /></label> : null}
-        <label>Geometry<select disabled={!canEdit} value={node.geometry.kind} onChange={(event) => onPropertyChange('geometry', event.target.value)}>{GEOMETRY_OPTIONS.map((kind) => <option key={kind} value={kind}>{kind}</option>)}</select></label>
-        <label>Color<input disabled={!canEdit} type="text" value={String(node.material.color ?? '')} placeholder="blue or 0x3366ff" onChange={(event) => onPropertyChange('color', event.target.value)} /></label>
-        <label>Roughness<input disabled={!canEdit} type="number" step="0.05" min="0" max="1" value={node.material.roughness ?? ''} onChange={(event) => onPropertyChange('roughness', event.target.value)} /></label>
-        <label>Metalness<input disabled={!canEdit} type="number" step="0.05" min="0" max="1" value={node.material.metalness ?? ''} onChange={(event) => onPropertyChange('metalness', event.target.value)} /></label>
+        {node.model?.source ? <label>{t("Model")}<input disabled type="text" value={node.model.source} /></label> : null}
+        <label>{t("Geometry")}<select disabled={!canEdit} value={node.geometry.kind} onChange={(event) => onPropertyChange('geometry', event.target.value)}>{GEOMETRY_OPTIONS.map((kind) => <option key={kind} value={kind}>{t(kind)}</option>)}</select></label>
+        <label>{t("Color")}<input disabled={!canEdit} type="text" value={String(node.material.color ?? '')} placeholder={t("blue or 0x3366ff")} onChange={(event) => onPropertyChange('color', event.target.value)} /></label>
+        <label>{t("Roughness")}<input disabled={!canEdit} type="number" step="0.05" min="0" max="1" value={node.material.roughness ?? ''} onChange={(event) => onPropertyChange('roughness', event.target.value)} /></label>
+        <label>{t("Metalness")}<input disabled={!canEdit} type="number" step="0.05" min="0" max="1" value={node.material.metalness ?? ''} onChange={(event) => onPropertyChange('metalness', event.target.value)} /></label>
       </div>
 
       {childNodes.length > 0 ? (
-        <section className="inspector-child-list" aria-label="Child selections">
-          <strong>Children</strong>
-          <ul>{childNodes.map((child) => <li key={child.id}><button type="button" onClick={() => onSelectNode(child.id)}>{displayName(child)}</button><span>{child.metadata?.viewPoint ? 'view point' : child.renderable ? child.geometry.kind : 'group'}</span></li>)}</ul>
+        <section className="inspector-child-list" aria-label={t("Child selections")}>
+          <strong>{t("Children")}</strong>
+          <ul>{childNodes.map((child) => <li key={child.id}><button type="button" onClick={() => onSelectNode(child.id)}>{displayName(child)}</button><span>{child.metadata?.viewPoint ? t("view point") : child.renderable ? t(child.geometry.kind) : t('group')}</span></li>)}</ul>
         </section>
       ) : null}
     </section>

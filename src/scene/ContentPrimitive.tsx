@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { Html, Text } from '@react-three/drei';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { SpatialNode } from '../model/SpatialNode';
@@ -28,6 +29,7 @@ function contentLabel(node: SpatialNode): string {
 }
 
 export function ContentPrimitive({ node, onSelect, selectionEnabled = true }: ContentPrimitiveProps) {
+  useLocale();
   if (!node.content?.kind) {
     return null;
   }
@@ -78,9 +80,7 @@ export function ContentPrimitive({ node, onSelect, selectionEnabled = true }: Co
               referrerPolicy="no-referrer"
               title={`Embedded content: ${node.content.url}`}
             />
-            <a href={node.content.url} target="_blank" rel="noreferrer">
-              Open URL
-            </a>
+            <a href={node.content.url} target="_blank" rel="noreferrer"> {t("Open URL")} </a>
           </div>
         </Html>
       )}
