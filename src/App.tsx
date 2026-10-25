@@ -1,3 +1,5 @@
+import { GalleryShareButton } from './gallery/GalleryShareButton';
+import { galleryHomeUrl, readGalleryLink } from './gallery/galleryShareUrl';
 import { GalleryPanel } from './gallery/GalleryPanel';
 import { preferredViewerSource, readGallery, type GalleryDocument } from './gallery/gallery';
 import { useSceneAssets } from './ui/useSceneAssets';
@@ -159,7 +161,29 @@ export default function App() {
   const appMode = isMobileViewport ? 'viewer' : requestedAppMode;
   const [galleryDocuments, setGalleryDocuments] = useState(readGallery);
   const [galleryIndex, setGalleryIndex] = useState(0);
-  const galleryEntry = appMode === 'viewer' ? galleryDocuments[galleryIndex] ?? galleryDocuments[0] : undefined;
+  const [pageHref, setPageHref] = useState(() => window.location.href);
+  useEffect(() => {
+    const update = () => setPageHref(window.location.href);
+    window.addEventListener('popstate', update);
+    window.addEventListener('hashchange', update);
+    return () => { window.removeEventListener('popstate', update); window.removeEventListener('hashchange', update); };
+  }, []);
+  const galleryLink = useMemo(() => readGalleryLink(pageHref, galleryDocuments), [pageHref, galleryDocuments]);
+  const backToGallery = () => {
+    const index = galleryDocuments.findIndex(entry => entry.id === galleryLink.document?.id);
+    setGalleryIndex(Math.max(0, index));
+    const href = galleryHomeUrl(window.location.href);
+    window.history.pushState(null, '', href);
+    setPageHref(href);
+    setAppMode('viewer');
+  };
+  const galleryEntry = appMode === 'viewer' ? (galleryLink.requested ? galleryLink.document : galleryDocuments[galleryIndex] ?? galleryDocuments[0]) : undefined;
+  useEffect(() => {
+    if (!galleryLink.document) return;
+    const previousTitle = window.document.title;
+    window.document.title = galleryLink.document.title;
+    return () => { window.document.title = previousTitle; };
+  }, [galleryLink.document]);
   const galleryDocument = useMemo(() => galleryEntry ? createSpatialDocument(galleryEntry.source) : undefined, [galleryEntry]);
   const changeGallery = (next: GalleryDocument[]) => {
     setGalleryDocuments(next);
@@ -860,15 +884,22 @@ export default function App() {
 
   return (
     <EditorLayout editing={appMode === 'editor'}>
-      {assetError && !galleryEntry && !viewingRemote ? <section className="scene-viewport"><p role="alert">{assetError}</p></section> : <SceneRoot
+      {galleryLink.requested && !galleryLink.document && appMode === 'viewer' ? <section className="scene-viewport gallery-unavailable">
+        <h1>Gallery document unavailable</h1><p>This link does not identify an available document.</p>
+        <button type="button" onClick={backToGallery}>Back to gallery</button>
+      </section> : assetError && !galleryEntry && !viewingRemote ? <section className="scene-viewport"><p role="alert">{assetError}</p></section> : <SceneRoot
         key={galleryEntry?.id ?? (viewingRemote ? 'remote' : 'draft')}
         resolveAsset={galleryEntry || viewingRemote ? undefined : assets.resolve}
         document={galleryDocument ?? (appMode === 'viewer' ? viewerDocument : document)}
-        onTraverseGallery={galleryEntry ? traverseGallery : undefined}
+        forceTour={Boolean(galleryEntry)}
+        onTraverseGallery={galleryEntry && !galleryLink.requested ? traverseGallery : undefined}
         galleryOverlay={galleryEntry && <nav className="gallery-navigation" aria-label="Gallery navigation">
-          <div aria-live="polite"><strong>{galleryEntry.title}</strong><small>{galleryIndex + 1} / {galleryDocuments.length} · Swipe from top/bottom edge</small></div>
+          <div aria-live="polite"><strong>{galleryEntry.title}</strong>{!galleryLink.requested && <small>{galleryIndex + 1} / {galleryDocuments.length} · Swipe from top/bottom edge</small>}</div>
+          {galleryLink.requested ? <button type="button" onClick={backToGallery}>Back to gallery</button> : <>
           <button type="button" aria-label="Previous gallery document" disabled={galleryIndex === 0} onClick={() => traverseGallery(-1)}>↑</button>
           <button type="button" aria-label="Next gallery document" disabled={galleryIndex === galleryDocuments.length - 1} onClick={() => traverseGallery(1)}>↓</button>
+          </>}
+          <GalleryShareButton key={galleryEntry.id} document={galleryEntry} />
         </nav>}
 
         selectedNodeId={galleryEntry ? undefined : selectedSceneNodeId}
@@ -886,7 +917,7 @@ export default function App() {
         onCreateNode={createProspectiveObject}
       />}
       <XyzDslDrawer
-        galleryPanel={<GalleryPanel documents={galleryDocuments} onChange={changeGallery} onOpen={index => { setGalleryIndex(index); setAppMode('viewer'); }} />}
+        galleryPanel={<GalleryPanel documents={galleryDocuments} onChange={changeGallery} onOpen={index => { if (galleryLink.requested) backToGallery(); setGalleryIndex(index); setAppMode('viewer'); }} />}
         assetsPanel={<SceneAssetsPanel isLocal={assets.isLocal} error={assets.error || assetError} onOpenBundle={assets.openBundle} onOpenFolder={assets.openFolder} onUseRemote={assets.useRemote} />}
         appMode={appMode}
         allowModeSwitch={!isMobileViewport}

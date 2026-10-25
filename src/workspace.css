@@ -1670,3 +1670,8 @@ button {
   @keyframes gallery-arrive { from { opacity: .35; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 }
 .scene-viewport:has(.gallery-navigation) { touch-action: none; height: 100dvh; }
+.gallery-share { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.gallery-share button { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px; }
+.gallery-share input { width: 100%; min-width: 0; }
+.gallery-navigation { flex-wrap: wrap; }
+.gallery-unavailable { padding: 5rem 1rem 1rem; }

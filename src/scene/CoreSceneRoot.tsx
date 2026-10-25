@@ -32,6 +32,7 @@ import type { AxisName } from '../xyzdsl/types';
 import type { LinearStepChoice, RotationStep } from '../ui/SelectedNodeInspector';
 
 interface SceneRootProps {
+  forceTour?: boolean;
   galleryOverlay?: ReactNode;
   onTraverseGallery?: (delta: number) => void;
   document: SpatialDocument;
@@ -53,7 +54,7 @@ interface SceneRootProps {
 const DEFAULT_ORBIT_TARGET: [number, number, number] = [0.6, 0.5, 0.4];
 const DEFAULT_CAMERA_POSITION: [number, number, number] = [1.4, 1.1, 1.8];
 
-export function SceneRoot({ galleryOverlay, onTraverseGallery, document: spatialDocument, selectedNodeId, onSelectNode, editorMode, selectedNodeCanEdit, editorLinearStep, editorRotationStep, linearStepChoice, onLinearStepChoiceChange, onRotationStepChange, onMoveNode, onResizeNode, onRotateNode, onCreateNode }: SceneRootProps) {
+export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery, document: spatialDocument, selectedNodeId, onSelectNode, editorMode, selectedNodeCanEdit, editorLinearStep, editorRotationStep, linearStepChoice, onLinearStepChoiceChange, onRotationStepChange, onMoveNode, onResizeNode, onRotateNode, onCreateNode }: SceneRootProps) {
   const gallerySwipe = useGallerySwipe(onTraverseGallery);
   const [quality] = useState(initialQuality);
   const [safe, setSafe] = useState(readSafeRendering);
@@ -98,7 +99,7 @@ export function SceneRoot({ galleryOverlay, onTraverseGallery, document: spatial
   const lights = useMemo(() => lightNodes(spatialDocument), [spatialDocument]);
   const points = useMemo(() => viewPoints(spatialDocument), [spatialDocument]);
   const orbitRef = useRef<OrbitControlType>(null);
-  const tour = useViewPointTour(spatialDocument, points.length, mobile, editorMode, Boolean(onTraverseGallery));
+  const tour = useViewPointTour(spatialDocument, points.length, mobile, editorMode, forceTour || Boolean(onTraverseGallery));
   const pointIndex = tour.index;
   const point = pointIndex === undefined ? undefined : points[pointIndex];
   const cameraMode = point ? 'pov' : 'orbit';
@@ -192,7 +193,7 @@ export function SceneRoot({ galleryOverlay, onTraverseGallery, document: spatial
           <button type="button" disabled={points.length < 2} onClick={() => tour.traverse(1)}>Next</button>
           {tour.exit && <button type="button" onClick={tour.exit}>Exit tour</button>}
         </div>
-        <p>Drag to look around · Previous/Next to traverse · ↑/↓ previous/next{tour.exit ? ' · Esc exit.' : ' · Swipe from the top/bottom edge to change gallery documents.'}</p>
+        <p>Drag to look around · Previous/Next to traverse · ↑/↓ previous/next{tour.exit ? ' · Esc exit.' : onTraverseGallery ? ' · Swipe from the top/bottom edge to change gallery documents.' : ''}</p>
       </> : <>
         {points.length > 0 && <button type="button" onClick={() => tour.start(orbitRef.current?.target.toArray() as [number, number, number] | undefined)}>Start tour · {points.length} view points</button>}
         <p>{editorMode ? 'Ctrl/Cmd + wheel rotate · +/− resize all · X/Y/Z resize axis · Shift decreases · [ step fine/coarse · ] angle fine/coarse · ' : ''}Cmd/Ctrl + click to select</p>

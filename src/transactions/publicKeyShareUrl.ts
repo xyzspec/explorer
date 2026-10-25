@@ -22,6 +22,8 @@ export function createPublicKeyShareUrl(publicKey: string, href: string): string
   }
 
   const url = new URL(href);
+  url.searchParams.delete('gallery');
+  if (new URLSearchParams(url.hash.slice(1)).has('gallery-document')) url.hash = '';
   url.searchParams.set(PUBLIC_KEY_SHARE_PARAM, toUrlSafeBase64(trimmedPublicKey));
   return url.toString();
 }

@@ -1,3 +1,4 @@
+import { GalleryShareButton } from './GalleryShareButton';
 import { useState } from 'react';
 import type { GalleryDocument } from './gallery';
 export function GalleryPanel({ documents, onChange, onOpen }: {
@@ -19,6 +20,7 @@ export function GalleryPanel({ documents, onChange, onOpen }: {
     {!documents.length && <p>No gallery documents. The viewer opens loaded remote sources, or the local draft when none are loaded.</p>}
     <ol>{documents.map((document, index) => <li key={document.id}>
       <button type="button" onClick={() => onOpen(index)}>{document.title}<small>Open tour →</small></button>
+      <GalleryShareButton document={document} />
     </li>)}</ol>
   </section>;
 }
