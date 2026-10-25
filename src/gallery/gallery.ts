@@ -5,8 +5,8 @@ export const INITIAL_GALLERY: GalleryDocument[] = [
   { id: 'lepapayer', title: 'LePapayer', source: lepapayer },
   { id: 'salouis', title: 'Salouis', source: salouis },
 ];
-export function initialGalleryIndex(mobile: boolean, documents: readonly GalleryDocument[], shared: boolean) {
-  return mobile && documents.length > 0 && !shared ? 0 : undefined;
+export function preferredViewerSource(remoteSource: string, localDraft: string) {
+  return remoteSource.trim() ? remoteSource : localDraft;
 }
 export function readGallery(): GalleryDocument[] {
   try {

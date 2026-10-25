@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, renderHook } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
-import { INITIAL_GALLERY, initialGalleryIndex, readGallery } from './gallery';
+import { INITIAL_GALLERY, preferredViewerSource, readGallery } from './gallery';
 import { createSpatialDocument } from '../model/createSpatialDocument';
 import { viewPoints } from '../scene/viewPoints';
 import { useViewPointTour } from '../scene/useViewPointTour';
@@ -16,12 +16,11 @@ it('loads both complete seed documents independently with their viewpoints', () 
   expect(INITIAL_GALLERY[0].source).not.toContain('salouis/');
   expect(INITIAL_GALLERY[1].source).not.toContain('lepapayer/');
 });
-it('defaults mobile to the gallery, preserves shared links and supports an empty saved collection', () => {
-  expect(initialGalleryIndex(true, readGallery(), false)).toBe(0);
-  expect(initialGalleryIndex(false, readGallery(), false)).toBeUndefined();
-  expect(initialGalleryIndex(true, readGallery(), true)).toBeUndefined();
+it('uses remote sources before the local draft and supports an empty saved collection', () => {
+  expect(preferredViewerSource('remote', 'draft')).toBe('remote');
+  expect(preferredViewerSource('  ', 'draft')).toBe('draft');
   localStorage.setItem('xyzdsl-gallery', '[]');
-  expect(initialGalleryIndex(true, readGallery(), false)).toBeUndefined();
+  expect(readGallery()).toEqual([]);
   localStorage.setItem('xyzdsl-gallery', '[null]');
   expect(readGallery()).toEqual(INITIAL_GALLERY);
 });
@@ -34,31 +33,39 @@ it('starts desktop gallery tours and resets the viewpoint on document changes', 
   rerender({ doc: docs[1] });
   expect(result.current.index).toBe(0);
 });
-it('switches once per vertical swipe and ignores look gestures, cancelled gestures and buttons', () => {
+it('switches only from screen edges and leaves center drags to the camera', () => {
   const traverse = vi.fn();
   function Surface() { return <div data-testid="surface" {...useGallerySwipe(traverse)}><button>Control</button></div>; }
   const view = render(<Surface />);
   const surface = view.getByTestId('surface');
+  surface.setPointerCapture = vi.fn();
+  surface.hasPointerCapture = vi.fn(() => false);
+  const cameraDown = vi.fn();
+  surface.addEventListener('pointerdown', cameraDown);
   function pointer(type: string, x: number, y: number, target: Element = surface) {
     const event = new Event(type, { bubbles: true });
     Object.assign(event, { pointerId: 1, clientX: x, clientY: y, isPrimary: true, pointerType: 'touch' });
     fireEvent(target, event);
   }
-  pointer('pointerdown', 100, 200); pointer('pointermove', 102, 100); pointer('pointerup', 102, 100);
+  const bottom = window.innerHeight - 10;
+  pointer('pointerdown', 100, bottom); pointer('pointermove', 102, bottom - 100); pointer('pointerup', 102, bottom - 100);
   expect(traverse).toHaveBeenLastCalledWith(1);
-  pointer('pointerdown', 100, 100); pointer('pointerup', 100, 200);
+  pointer('pointerdown', 100, 10); pointer('pointerup', 100, 110);
   expect(traverse).toHaveBeenLastCalledWith(-1);
-  pointer('pointerdown', 100, 100); pointer('pointermove', 180, 110); pointer('pointerup', 180, 300);
-  pointer('pointerdown', 100, 100); pointer('pointercancel', 100, 200); pointer('pointerup', 100, 200);
-  pointer('pointerdown', 100, 100, view.getByText('Control')); pointer('pointerup', 100, 200);
-  pointer('pointerdown', 100, 100); pointer('pointerup', 100, 120);
+  expect(cameraDown).not.toHaveBeenCalled();
+  pointer('pointerdown', 100, 300); pointer('pointermove', 100, 100); pointer('pointerup', 100, 10);
+  expect(cameraDown).toHaveBeenCalledOnce();
+  pointer('pointerdown', 100, 10); pointer('pointermove', 180, 20); pointer('pointerup', 180, 200);
+  pointer('pointerdown', 100, 10); pointer('pointercancel', 100, 200); pointer('pointerup', 100, 200);
+  pointer('pointerdown', 100, 10, view.getByText('Control')); pointer('pointerup', 100, 200);
+  pointer('pointerdown', 100, 10); pointer('pointerup', 100, 30);
   expect(traverse).toHaveBeenCalledTimes(2);
 });
-it('opens and removes individual gallery documents', () => {
+it('opens gallery documents without offering removal', () => {
   const onOpen = vi.fn(), onChange = vi.fn();
   const view = render(<GalleryPanel documents={INITIAL_GALLERY} onOpen={onOpen} onChange={onChange} />);
   fireEvent.click(view.getByText('Salouis'));
   expect(onOpen).toHaveBeenCalledWith(1);
-  fireEvent.click(view.getByLabelText('Remove LePapayer from gallery'));
-  expect(onChange).toHaveBeenCalledWith([INITIAL_GALLERY[1]]);
+  expect(view.queryByLabelText(/Remove .* from gallery/)).toBeNull();
+  expect(onChange).not.toHaveBeenCalled();
 });

@@ -146,7 +146,7 @@ export function SceneRoot({ galleryOverlay, onTraverseGallery, document: spatial
       ))}
       {selectedNode && !point && (editorMode || (!selectedNode.metadata?.viewPoint && !selectedNode.light)) ? <SelectionBounds node={selectedNode} /> : null}
       {cameraMode === 'orbit' ? <OrbitControls ref={orbitRef} makeDefault target={orbitTarget} maxPolarAngle={Math.PI} /> : null}
-      <ViewPointControls galleryMode={Boolean(onTraverseGallery)} point={point} orbitTarget={tour.orbitTarget} onTraverse={tour.traverse} onExit={tour.exit} />
+      <ViewPointControls point={point} orbitTarget={tour.orbitTarget} onTraverse={tour.traverse} onExit={tour.exit} />
       <CameraClipController nodes={cameraSizingNodes} scale={sceneScale} selectionBounds={selectionBounds} />
       <EditorSelectionControls
         active={editorMode && cameraMode === 'orbit'}
@@ -192,7 +192,7 @@ export function SceneRoot({ galleryOverlay, onTraverseGallery, document: spatial
           <button type="button" disabled={points.length < 2} onClick={() => tour.traverse(1)}>Next</button>
           {tour.exit && <button type="button" onClick={tour.exit}>Exit tour</button>}
         </div>
-        <p>Drag to look around · Previous/Next to traverse · ↑/↓ previous/next{tour.exit ? ' · Esc exit.' : ' · Swipe up/down to change gallery documents.'}</p>
+        <p>Drag to look around · Previous/Next to traverse · ↑/↓ previous/next{tour.exit ? ' · Esc exit.' : ' · Swipe from the top/bottom edge to change gallery documents.'}</p>
       </> : <>
         {points.length > 0 && <button type="button" onClick={() => tour.start(orbitRef.current?.target.toArray() as [number, number, number] | undefined)}>Start tour · {points.length} view points</button>}
         <p>{editorMode ? 'Ctrl/Cmd + wheel rotate · +/− resize all · X/Y/Z resize axis · Shift decreases · [ step fine/coarse · ] angle fine/coarse · ' : ''}Cmd/Ctrl + click to select</p>

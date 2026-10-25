@@ -4,8 +4,8 @@ import { Euler, MathUtils, Quaternion, Vector3 } from 'three';
 import type { SpatialNode } from '../model/SpatialNode';
 import type { OrbitControls } from 'three-stdlib';
 
-export function ViewPointControls({ point, orbitTarget, onTraverse, onExit, galleryMode = false }: {
-  galleryMode?: boolean; point?: SpatialNode; orbitTarget?: [number, number, number]; onTraverse: (delta: number) => void; onExit?: () => void;
+export function ViewPointControls({ point, orbitTarget, onTraverse, onExit }: {
+  point?: SpatialNode; orbitTarget?: [number, number, number]; onTraverse: (delta: number) => void; onExit?: () => void;
 }) {
   const { camera, gl, invalidate, get } = useThree();
   const saved = useRef<{ position: Vector3; quaternion: Quaternion; target?: Vector3 } | undefined>(undefined);
@@ -32,20 +32,17 @@ export function ViewPointControls({ point, orbitTarget, onTraverse, onExit, gall
     const oldTouchAction = element.style.touchAction;
     element.style.touchAction = 'none';
     const angles = new Euler().setFromQuaternion(camera.quaternion, 'YXZ');
-    let drag: { id: number; lastX: number; lastY: number; startX: number; startY: number } | undefined;
+    let drag: { id: number; lastX: number; lastY: number } | undefined;
     const down = (event: PointerEvent) => {
       if (drag || event.button !== 0 || !event.isPrimary) return;
-      drag = { id: event.pointerId, lastX: event.clientX, lastY: event.clientY, startX: event.clientX, startY: event.clientY };
+      drag = { id: event.pointerId, lastX: event.clientX, lastY: event.clientY };
       element.setPointerCapture(event.pointerId);
     };
     const move = (event: PointerEvent) => {
       if (!drag || drag.id !== event.pointerId) return;
-      if (galleryMode && event.pointerType === 'touch' && Math.abs(event.clientY - drag.startY) > Math.abs(event.clientX - drag.startX)) {
-        drag.lastX = event.clientX; drag.lastY = event.clientY; return;
-      }
       angles.setFromQuaternion(camera.quaternion, 'YXZ');
       angles.y -= (event.clientX - drag.lastX) * 0.005;
-      if (!galleryMode || event.pointerType !== 'touch') angles.x = MathUtils.clamp(angles.x - (event.clientY - drag.lastY) * 0.005, -Math.PI / 2 + .01, Math.PI / 2 - .01);
+      angles.x = MathUtils.clamp(angles.x - (event.clientY - drag.lastY) * 0.005, -Math.PI / 2 + .01, Math.PI / 2 - .01);
       camera.rotation.set(angles.x, angles.y, 0, 'YXZ');
       drag.lastX = event.clientX;
       drag.lastY = event.clientY;
@@ -83,6 +80,6 @@ export function ViewPointControls({ point, orbitTarget, onTraverse, onExit, gall
       window.removeEventListener('blur', cancel);
       if (drag && element.hasPointerCapture(drag.id)) element.releasePointerCapture(drag.id);
     };
-  }, [point, camera, gl, invalidate, onTraverse, onExit, get, orbitTarget, galleryMode]);
+  }, [point, camera, gl, invalidate, onTraverse, onExit, get, orbitTarget]);
   return null;
 }
