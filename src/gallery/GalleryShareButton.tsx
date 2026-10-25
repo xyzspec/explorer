@@ -1,5 +1,5 @@
 import { t, useLocale } from '../i18n';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { GalleryDocument } from './gallery';
 import { createGalleryShareUrl } from './galleryShareUrl';
 
@@ -7,6 +7,11 @@ export function GalleryShareButton({ document }: { document: GalleryDocument }) 
   useLocale();
   const [status, setStatus] = useState<'idle' | 'copied' | 'error'>('idle');
   const [manualLink, setManualLink] = useState('');
+  useEffect(() => {
+    if (status !== 'copied') return;
+    const timer = window.setTimeout(() => setStatus('idle'), 3000);
+    return () => window.clearTimeout(timer);
+  }, [status]);
   return <div className="gallery-share">
     <button type="button" aria-label={t("Copy link to {title}", { title: document.title })} title={t("Share {title}", { title: document.title })} onClick={async () => {
       const link = createGalleryShareUrl(document, window.location.href);

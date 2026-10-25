@@ -1,5 +1,6 @@
 /** English source messages are stable keys; user content and XYZDSL syntax stay unchanged. */
 export const fr: Record<string, string> = {
+  "Document {current} of {total}": "Document {current} sur {total}",
   "Endpoint is not a valid WebSocket URL.": "L’adresse du serveur WebSocket n’est pas valide.",
   "Unable to load blockchain tip.": "Impossible de charger le dernier bloc.",
   "Unable to load secondary tenant history.": "Impossible de charger l’historique du locataire secondaire.",

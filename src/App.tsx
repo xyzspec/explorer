@@ -1,6 +1,6 @@
 import { LanguageMenu } from './ui/LanguageMenu';
 import { t, useLocale } from './i18n';
-import { GalleryShareButton } from './gallery/GalleryShareButton';
+import { GalleryNavigation } from './gallery/GalleryNavigation';
 import { galleryHomeUrl, readGalleryLink } from './gallery/galleryShareUrl';
 import { GalleryPanel } from './gallery/GalleryPanel';
 import { preferredViewerSource, readGallery, type GalleryDocument } from './gallery/gallery';
@@ -193,9 +193,23 @@ export default function App() {
     setGalleryIndex(0);
     try { localStorage.setItem('xyzdsl-gallery', JSON.stringify(next)); } catch { /* Keep this session usable without storage. */ }
   };
+  const galleryFocusDirection = useRef<string | undefined>(undefined);
   const traverseGallery = useCallback((delta: number) => {
+    const active = window.document.activeElement as HTMLElement | null;
+    galleryFocusDirection.current = active?.dataset.galleryDirection;
     setGalleryIndex(index => Math.max(0, Math.min(galleryDocuments.length - 1, index + delta)));
   }, [galleryDocuments.length]);
+  useEffect(() => {
+    const direction = galleryFocusDirection.current;
+    galleryFocusDirection.current = undefined;
+    if (!direction) return;
+    // Scene changes remount its overlay. Keep keyboard navigation in the gallery,
+    // using the opposite arrow when the chosen direction reaches an endpoint.
+    const preferred = window.document.querySelector<HTMLButtonElement>(`[data-gallery-direction="${direction}"]`);
+    const target = preferred && !preferred.disabled ? preferred
+      : window.document.querySelector<HTMLButtonElement>('[data-gallery-direction]:not(:disabled)');
+    target?.focus({ preventScroll: true });
+  }, [galleryIndex]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   useEffect(() => {
     if (isMobileViewport) {
@@ -897,14 +911,9 @@ export default function App() {
         document={galleryDocument ?? (appMode === 'viewer' ? viewerDocument : document)}
         forceTour={Boolean(galleryEntry)}
         onTraverseGallery={galleryEntry && !galleryLink.requested ? traverseGallery : undefined}
-        galleryOverlay={galleryEntry && <nav className="gallery-navigation" aria-label={t("Gallery navigation")}>
-          <div aria-live="polite"><strong>{galleryEntry.title}</strong>{!galleryLink.requested && <small>{galleryIndex + 1} / {galleryDocuments.length} {t("· Swipe from top/bottom edge")}</small>}</div>
-          {galleryLink.requested ? <button type="button" onClick={backToGallery}>{t("Back to gallery")}</button> : <>
-          <button type="button" aria-label={t("Previous gallery document")} disabled={galleryIndex === 0} onClick={() => traverseGallery(-1)}>↑</button>
-          <button type="button" aria-label={t("Next gallery document")} disabled={galleryIndex === galleryDocuments.length - 1} onClick={() => traverseGallery(1)}>↓</button>
-          </>}
-          <GalleryShareButton key={galleryEntry.id} document={galleryEntry} />
-        </nav>}
+        galleryOverlay={galleryEntry && <GalleryNavigation document={galleryEntry} index={galleryIndex}
+          count={galleryDocuments.length} isolated={galleryLink.requested} onBack={backToGallery} onTraverse={traverseGallery} />}
+
 
         selectedNodeId={galleryEntry ? undefined : selectedSceneNodeId}
         onSelectNode={handleSelectNode}

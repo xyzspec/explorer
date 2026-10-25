@@ -179,7 +179,7 @@ export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery
       extension.loseContext();
       setTimeout(() => extension.restoreContext(), 1000);
     }}>{t("Test graphics recovery")}</button>}
-    {mobile ? point && points.length > 1 && (
+    {(mobile || Boolean(galleryOverlay)) ? point && points.length > 1 && (
       <nav className="view-point-overlays" aria-label={t("View point traversal")}>
         <span className="view-point-status" role="status">{t("View point")} {(pointIndex ?? 0) + 1} {t("of")} {points.length}</span>
         <button type="button" aria-label={t("Previous view point")} onClick={() => tour.traverse(-1)}>‹</button>
