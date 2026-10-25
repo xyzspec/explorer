@@ -1,3 +1,5 @@
+import { GalleryPanel } from './gallery/GalleryPanel';
+import { initialGalleryIndex, readGallery, type GalleryDocument } from './gallery/gallery';
 import { useSceneAssets } from './ui/useSceneAssets';
 import { SceneAssetsPanel } from './ui/SceneAssetsPanel';
 import INITIAL_XYZDSL from './defaultDraft.xyzdsl?raw';
@@ -153,6 +155,18 @@ export default function App() {
   const [remoteBaselineAppliedToEditor, setRemoteBaselineAppliedToEditor] = useState('');
   const latestRemoteBaselineRef = useRef('');
   const isMobileViewport = useMobileViewport();
+  const [galleryDocuments, setGalleryDocuments] = useState(readGallery);
+  const [galleryIndex, setGalleryIndex] = useState<number | undefined>(() => initialGalleryIndex(isMobileViewport, galleryDocuments, Boolean(SHARED_TRANSACTION_PUBLIC_KEY)));
+  const galleryEntry = galleryIndex === undefined ? undefined : galleryDocuments[galleryIndex];
+  const galleryDocument = useMemo(() => galleryEntry ? createSpatialDocument(galleryEntry.source) : undefined, [galleryEntry]);
+  const changeGallery = (next: GalleryDocument[]) => {
+    setGalleryDocuments(next);
+    setGalleryIndex(undefined);
+    try { localStorage.setItem('xyzdsl-gallery', JSON.stringify(next)); } catch { /* Keep this session usable without storage. */ }
+  };
+  const traverseGallery = useCallback((delta: number) => {
+    setGalleryIndex(index => index === undefined ? undefined : Math.max(0, Math.min(galleryDocuments.length - 1, index + delta)));
+  }, [galleryDocuments.length]);
   const [requestedAppMode, setAppMode] = useState<'viewer' | 'editor'>('viewer');
   const appMode = isMobileViewport ? 'viewer' : requestedAppMode;
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -744,6 +758,7 @@ export default function App() {
     setAppMode(mode);
 
     if (mode === 'editor') {
+      setGalleryIndex(undefined);
       setDrawerOpen(true);
     }
   }, [isMobileViewport]);
@@ -839,10 +854,19 @@ export default function App() {
 
   return (
     <EditorLayout editing={appMode === 'editor'}>
-      {assetError ? <section className="scene-viewport"><p role="alert">{assetError}</p></section> : <SceneRoot
-        resolveAsset={assets.resolve}
-        document={document}
-        selectedNodeId={selectedSceneNodeId}
+      {assetError && !galleryEntry ? <section className="scene-viewport"><p role="alert">{assetError}</p></section> : <SceneRoot
+        key={galleryEntry?.id ?? 'draft'}
+        resolveAsset={galleryEntry ? undefined : assets.resolve}
+        document={galleryDocument ?? document}
+        onTraverseGallery={galleryEntry ? traverseGallery : undefined}
+        galleryOverlay={galleryEntry && <nav className="gallery-navigation" aria-label="Gallery navigation">
+          <div aria-live="polite"><strong>{galleryEntry.title}</strong><small>{(galleryIndex ?? 0) + 1} / {galleryDocuments.length} · Swipe up/down</small></div>
+          <button type="button" aria-label="Previous gallery document" disabled={galleryIndex === 0} onClick={() => traverseGallery(-1)}>↑</button>
+          <button type="button" aria-label="Next gallery document" disabled={galleryIndex === galleryDocuments.length - 1} onClick={() => traverseGallery(1)}>↓</button>
+          <button type="button" onClick={() => setGalleryIndex(undefined)}>Local draft</button>
+        </nav>}
+
+        selectedNodeId={galleryEntry ? undefined : selectedSceneNodeId}
         onSelectNode={handleSelectNode}
         editorMode={appMode === 'editor'}
         selectedNodeCanEdit={selectedNodeCanEdit}
@@ -856,7 +880,9 @@ export default function App() {
         onRotateNode={rotateSelectedDeclaration}
         onCreateNode={createProspectiveObject}
       />}
+      {!galleryEntry && appMode === 'viewer' && galleryDocuments.length > 0 && <button type="button" className="gallery-open" onClick={() => setGalleryIndex(0)}>Gallery</button>}
       <XyzDslDrawer
+        galleryPanel={<GalleryPanel documents={galleryDocuments} onChange={changeGallery} onOpen={index => { setGalleryIndex(index); setAppMode('viewer'); }} />}
         assetsPanel={<SceneAssetsPanel isLocal={assets.isLocal} error={assets.error || assetError} onOpenBundle={assets.openBundle} onOpenFolder={assets.openFolder} onUseRemote={assets.useRemote} />}
         appMode={appMode}
         allowModeSwitch={!isMobileViewport}

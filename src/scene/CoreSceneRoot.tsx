@@ -1,3 +1,5 @@
+import { useGallerySwipe } from '../gallery/useGallerySwipe';
+import type { ReactNode } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { initialQuality, QUALITY } from '../performance/renderQuality';
@@ -30,6 +32,8 @@ import type { AxisName } from '../xyzdsl/types';
 import type { LinearStepChoice, RotationStep } from '../ui/SelectedNodeInspector';
 
 interface SceneRootProps {
+  galleryOverlay?: ReactNode;
+  onTraverseGallery?: (delta: number) => void;
   document: SpatialDocument;
   selectedNodeId?: string;
   onSelectNode?: (id: string | undefined) => void;
@@ -49,7 +53,8 @@ interface SceneRootProps {
 const DEFAULT_ORBIT_TARGET: [number, number, number] = [0.6, 0.5, 0.4];
 const DEFAULT_CAMERA_POSITION: [number, number, number] = [1.4, 1.1, 1.8];
 
-export function SceneRoot({ document: spatialDocument, selectedNodeId, onSelectNode, editorMode, selectedNodeCanEdit, editorLinearStep, editorRotationStep, linearStepChoice, onLinearStepChoiceChange, onRotationStepChange, onMoveNode, onResizeNode, onRotateNode, onCreateNode }: SceneRootProps) {
+export function SceneRoot({ galleryOverlay, onTraverseGallery, document: spatialDocument, selectedNodeId, onSelectNode, editorMode, selectedNodeCanEdit, editorLinearStep, editorRotationStep, linearStepChoice, onLinearStepChoiceChange, onRotationStepChange, onMoveNode, onResizeNode, onRotateNode, onCreateNode }: SceneRootProps) {
+  const gallerySwipe = useGallerySwipe(onTraverseGallery);
   const [quality] = useState(initialQuality);
   const [safe, setSafe] = useState(readSafeRendering);
   const [rendererGeneration, setRendererGeneration] = useState(0);
@@ -93,7 +98,7 @@ export function SceneRoot({ document: spatialDocument, selectedNodeId, onSelectN
   const lights = useMemo(() => lightNodes(spatialDocument), [spatialDocument]);
   const points = useMemo(() => viewPoints(spatialDocument), [spatialDocument]);
   const orbitRef = useRef<OrbitControlType>(null);
-  const tour = useViewPointTour(spatialDocument, points.length, mobile, editorMode);
+  const tour = useViewPointTour(spatialDocument, points.length, mobile, editorMode, Boolean(onTraverseGallery));
   const pointIndex = tour.index;
   const point = pointIndex === undefined ? undefined : points[pointIndex];
   const cameraMode = point ? 'pov' : 'orbit';
@@ -112,7 +117,8 @@ export function SceneRoot({ document: spatialDocument, selectedNodeId, onSelectN
   const cameraRef = useRef<ThreePerspectiveCamera>(null);
 
   return (
-    <div className="scene-viewport">
+    <div className="scene-viewport" {...gallerySwipe}>
+    {galleryOverlay}
     <RendererBoundary key={rendererGeneration} onRetry={retryRenderer}>
     <Canvas
       className="scene-canvas"
@@ -140,7 +146,7 @@ export function SceneRoot({ document: spatialDocument, selectedNodeId, onSelectN
       ))}
       {selectedNode && !point && (editorMode || (!selectedNode.metadata?.viewPoint && !selectedNode.light)) ? <SelectionBounds node={selectedNode} /> : null}
       {cameraMode === 'orbit' ? <OrbitControls ref={orbitRef} makeDefault target={orbitTarget} maxPolarAngle={Math.PI} /> : null}
-      <ViewPointControls point={point} orbitTarget={tour.orbitTarget} onTraverse={tour.traverse} onExit={tour.exit} />
+      <ViewPointControls galleryMode={Boolean(onTraverseGallery)} point={point} orbitTarget={tour.orbitTarget} onTraverse={tour.traverse} onExit={tour.exit} />
       <CameraClipController nodes={cameraSizingNodes} scale={sceneScale} selectionBounds={selectionBounds} />
       <EditorSelectionControls
         active={editorMode && cameraMode === 'orbit'}
@@ -184,9 +190,9 @@ export function SceneRoot({ document: spatialDocument, selectedNodeId, onSelectN
           <button type="button" disabled={points.length < 2} onClick={() => tour.traverse(-1)}>Previous</button>
           <span role="status">View point {(pointIndex ?? 0) + 1} / {points.length}</span>
           <button type="button" disabled={points.length < 2} onClick={() => tour.traverse(1)}>Next</button>
-          <button type="button" onClick={tour.exit}>Exit tour</button>
+          {tour.exit && <button type="button" onClick={tour.exit}>Exit tour</button>}
         </div>
-        <p>Drag to look around · Previous/Next to traverse · ↑/↓ previous/next · Esc exit.</p>
+        <p>Drag to look around · Previous/Next to traverse · ↑/↓ previous/next{tour.exit ? ' · Esc exit.' : ' · Swipe up/down to change gallery documents.'}</p>
       </> : <>
         {points.length > 0 && <button type="button" onClick={() => tour.start(orbitRef.current?.target.toArray() as [number, number, number] | undefined)}>Start tour · {points.length} view points</button>}
         <p>{editorMode ? 'Ctrl/Cmd + wheel rotate · +/− resize all · X/Y/Z resize axis · Shift decreases · [ step fine/coarse · ] angle fine/coarse · ' : ''}Cmd/Ctrl + click to select</p>

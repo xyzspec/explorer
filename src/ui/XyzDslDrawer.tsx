@@ -14,7 +14,7 @@ import { XyzDslTreeView } from './XyzDslTreeView';
 import { SelectedNodeInspector } from './SelectedNodeInspector';
 import { usePersistentState } from './usePersistentState';
 
-type DrawerTab = 'objects' | 'source' | 'assets' | 'data' | 'problems';
+type DrawerTab = 'gallery' | 'objects' | 'source' | 'assets' | 'data' | 'problems';
 
 function describeAuthoringState(
   hasRemoteBaseline: boolean,
@@ -90,6 +90,7 @@ function renderAuthoringStatus(
 }
 
 interface XyzDslDrawerProps {
+  galleryPanel?: ReactNode;
   assetsPanel?: ReactNode;
   appMode: 'viewer' | 'editor';
   allowModeSwitch?: boolean;
@@ -147,6 +148,7 @@ interface XyzDslDrawerProps {
 export function XyzDslDrawer({
   assetsPanel,
   allowModeSwitch = true,
+  galleryPanel,
   appMode,
   document,
   isOpen,
@@ -201,6 +203,7 @@ export function XyzDslDrawer({
   const [activeTab, setActiveTab] = usePersistentState<DrawerTab>('xyzdsl-drawer-active-tab', 'objects');
   const problemCount = document.diagnostics.length + rejectedTransactions.length;
   const tabs: { id: DrawerTab; label: string; count?: number }[] = [
+    ...(galleryPanel ? [{ id: 'gallery' as const, label: 'Gallery' }] : []),
     { id: 'objects', label: 'Objects' },
     { id: 'source', label: 'Source' },
     { id: 'assets', label: 'Assets' },
@@ -209,6 +212,7 @@ export function XyzDslDrawer({
   ];
   return (
     <WorkspacePanel mode={appMode} open={isOpen} allowModeSwitch={allowModeSwitch} onModeChange={onModeChange} title="xyzSpec" tabs={tabs} activeTab={activeTab} onTabChange={tab => setActiveTab(tab as DrawerTab)}>
+          {activeTab === 'gallery' && galleryPanel}
           {activeTab === 'objects' ? (
             <div className="object-workspace">
               <XyzDslTreeView document={document} selectedNodeId={selectedNodeId} onSelectNode={onSelectNode} />
