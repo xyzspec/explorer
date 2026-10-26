@@ -113,9 +113,10 @@ export function SceneRoot({ initialViewPoint = 0, onViewPointChange, galleryCanP
   const tour = useViewPointTour(spatialDocument, points.length, mobile, editorMode, forceTour || Boolean(onTraverseGallery), initialViewPoint, onViewPointChange);
   const pointIndex = tour.index;
   const point = pointIndex === undefined ? undefined : points[pointIndex];
+  const enterLooking = useCallback(() => { dismissHint(); setLooking(true); }, [dismissHint]);
   const selectPoint = useCallback((index: number) => { dismissHint(); tour.select(index); }, [dismissHint, tour.select]);
   const gallerySwipe = useGallerySwipe(onTraverseGallery, gallery && points.length > 1 ? tour.traverse : undefined, gallery && !looking,
-    (axis, delta) => axis === 'y' ? (delta > 0 ? galleryCanNext : galleryCanPrevious) : pointIndex !== undefined && pointIndex + delta >= 0 && pointIndex + delta < points.length, dismissHint);
+    (axis, delta) => axis === 'y' ? (delta > 0 ? galleryCanNext : galleryCanPrevious) : pointIndex !== undefined && pointIndex + delta >= 0 && pointIndex + delta < points.length, dismissHint, enterLooking);
   const cameraMode = point ? 'pov' : 'orbit';
   // A thin editor selection must not carry its tiny near plane into a room tour:
   // it loses depth precision and makes closely spaced model surfaces z-fight.
@@ -132,9 +133,10 @@ export function SceneRoot({ initialViewPoint = 0, onViewPointChange, galleryCanP
   const cameraRef = useRef<ThreePerspectiveCamera>(null);
 
   return (
-    <div className={`scene-viewport${gallery ? " gallery-feed" : ""}`} {...gallerySwipe.handlers}>
+    <div className={`scene-viewport${gallery ? ` gallery-feed${looking ? " is-looking" : ""}` : ""}`} {...gallerySwipe.handlers}>
     {galleryOverlay}
     <div className="gallery-scene-motion" style={gallery ? gallerySwipe.style : undefined}>
+    <div className={gallery ? "gallery-scene-card" : "scene-surface"} data-gallery-card={gallery ? true : undefined}>
     <RendererBoundary key={rendererGeneration} onRetry={retryRenderer}>
     <Canvas
       className="scene-canvas"
@@ -186,6 +188,7 @@ export function SceneRoot({ initialViewPoint = 0, onViewPointChange, galleryCanP
       {preparation === 'context-lost' && <button onClick={retryRenderer}>{t("Restart viewer")}</button>}
     </div>}
     </RendererBoundary>
+    </div>
     </div>
     {diagnostics && <button style={{ position: 'absolute', bottom: 100, left: 12, zIndex: 30 }} onClick={() => {
       const extension = rendererRef.current?.getContext().getExtension('WEBGL_lose_context');

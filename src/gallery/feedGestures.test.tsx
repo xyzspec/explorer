@@ -48,3 +48,22 @@ it('locks the initial axis even when a drag bends', () => {
   act(() => vi.advanceTimersByTime(200));
   expect(horizontal).toHaveBeenCalledWith(1); expect(vertical).not.toHaveBeenCalled();
 });
+
+it('enters the scene on a tap, including a single document, but never after a drag or control tap', () => {
+  const enter = vi.fn();
+  function Surface() {
+    return <div data-testid="surface" {...useGallerySwipe(undefined, undefined, true, undefined, undefined, enter).handlers}><div data-gallery-card><canvas /></div><button>Control</button></div>;
+  }
+  const view = render(<Surface />), surface = view.getByTestId('surface');
+  surface.setPointerCapture = vi.fn(); surface.hasPointerCapture = vi.fn(() => false);
+  const canvas = surface.querySelector('canvas')!;
+  function pointer(type: string, x: number, y: number, target: Element = canvas) {
+    const event = new Event(type, { bubbles: true }); Object.assign(event, { pointerId: 1, clientX: x, clientY: y, isPrimary: true, button: 0 }); fireEvent(target, event);
+  }
+  pointer('pointerdown', 100, 100); pointer('pointerup', 102, 101);
+  expect(enter).toHaveBeenCalledOnce();
+  pointer('pointerdown', 100, 100); pointer('pointermove', 130, 100); pointer('pointerup', 100, 100);
+  pointer('pointerdown', 100, 100); pointer('pointercancel', 100, 100); pointer('pointerup', 100, 100);
+  pointer('pointerdown', 100, 100, view.getByText('Control')); pointer('pointerup', 100, 100, view.getByText('Control'));
+  expect(enter).toHaveBeenCalledOnce();
+});

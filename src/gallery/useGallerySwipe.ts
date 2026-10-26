@@ -4,8 +4,8 @@ export function gallerySwipeDirection(dx: number, dy: number) {
   return Math.abs(dy) >= 64 && Math.abs(dy) > Math.abs(dx) * 1.5 ? (dy < 0 ? 1 : -1) : 0;
 }
 type Axis = 'x' | 'y';
-export function useGallerySwipe(onVertical?: (delta: number) => void, onHorizontal?: (delta: number) => void, enabled = true, canMove: (axis: Axis, delta: number) => boolean = () => true, onInteract?: () => void) {
-  const start = useRef<{ id: number; x: number; y: number; axis?: Axis } | undefined>(undefined);
+export function useGallerySwipe(onVertical?: (delta: number) => void, onHorizontal?: (delta: number) => void, enabled = true, canMove: (axis: Axis, delta: number) => boolean = () => true, onInteract?: () => void, onTap?: () => void) {
+  const start = useRef<{ id: number; x: number; y: number; moved: boolean; tapTarget: boolean; axis?: Axis } | undefined>(undefined);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [offset, setOffset] = useState({ x: 0, y: 0, moving: false });
   const busy = useRef(false);
@@ -14,11 +14,11 @@ export function useGallerySwipe(onVertical?: (delta: number) => void, onHorizont
   const reset = () => { start.current = undefined; setOffset({ x: 0, y: 0, moving: false }); };
   const handlers = {
     onPointerDownCapture: (event: PointerEvent<HTMLDivElement>) => {
-      if (!enabled || busy.current || event.button !== 0 || (!onVertical && !onHorizontal)) return;
+      if (!enabled || busy.current || event.button !== 0 || (!onVertical && !onHorizontal && !onTap)) return;
       if (!event.isPrimary) { reset(); return; }
       onInteract?.();
       if ((event.target as HTMLElement).closest('button, input, nav, label, a')) return;
-      start.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      start.current = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false, tapTarget: Boolean((event.target as HTMLElement).closest('[data-gallery-card]')) };
       event.stopPropagation();
       event.currentTarget.setPointerCapture(event.pointerId);
     },
@@ -27,6 +27,7 @@ export function useGallerySwipe(onVertical?: (delta: number) => void, onHorizont
       if (!origin || origin.id !== event.pointerId) return;
       event.stopPropagation();
       const dx = event.clientX - origin.x, dy = event.clientY - origin.y;
+      if (Math.hypot(dx, dy) > 8) origin.moved = true;
       if (!origin.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 12) origin.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'x' : Math.abs(dy) > Math.abs(dx) * 1.2 ? 'y' : undefined;
       if (!origin.axis) return;
       const distance = origin.axis === 'x' ? dx : dy;
@@ -40,6 +41,7 @@ export function useGallerySwipe(onVertical?: (delta: number) => void, onHorizont
       event.stopPropagation();
       start.current = undefined;
       if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+      if (!origin.moved && origin.tapTarget && Math.hypot(event.clientX - origin.x, event.clientY - origin.y) <= 8) { reset(); onTap?.(); return; }
       const distance = origin.axis === 'x' ? event.clientX - origin.x : event.clientY - origin.y;
       const delta = distance < 0 ? 1 : -1;
       const callback = origin.axis === 'x' ? onHorizontal : onVertical;

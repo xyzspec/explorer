@@ -1,5 +1,6 @@
 /** English source messages are stable keys; user content and XYZDSL syntax stay unchanged. */
 export const fr: Record<string, string> = {
+  "Tap to look around": "Touchez pour regarder autour",
   "Look around": "Regarder autour",
   "Done": "Terminé",
   "Drag to look around": "Glissez pour regarder autour",

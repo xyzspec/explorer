@@ -27,7 +27,7 @@ export function GalleryPager({ points, index, looking, onLookingChange, onSelect
   const first = Math.max(0, Math.min(current - 3, points.length - 7));
   return <div className="gallery-pager">
     {hint && <div className="gallery-swipe-hint" role="status"><span aria-hidden="true">↑</span>{t('Swipe up for the next space')}</div>}
-    <button type="button" className={`gallery-look ${looking ? 'is-active' : ''}`} aria-pressed={looking} onClick={() => onLookingChange(!looking)}>{looking ? t('Done') : t('Look around')}</button>
+    <button type="button" className={`gallery-look ${looking ? 'is-active' : ''}`} aria-pressed={looking} onClick={() => onLookingChange(!looking)}>{looking ? t('Done') : t('Tap to look around')}</button>
     <small className="gallery-mode-hint">{looking ? t('Drag to look around') : points.length > 1 ? t('Swipe sideways for viewpoints') : ''}</small>
     {index !== undefined && <strong aria-live="polite">{viewpointLabel(points[current], current)}</strong>}
     {points.length > 1 && <nav aria-label={t('View point traversal')} className="gallery-pagination">

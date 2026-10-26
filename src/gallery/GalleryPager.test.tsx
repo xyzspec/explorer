@@ -15,7 +15,7 @@ it('names viewpoints, selects dots, stops at boundaries, and toggles Look around
   expect(view.getByText('Entrance')).toBeTruthy();
   expect((view.getByLabelText('Previous view point') as HTMLButtonElement).disabled).toBe(true);
   fireEvent.click(view.getByLabelText('Go to Kitchen, 3 of 7')); expect(select).toHaveBeenCalledWith(2);
-  fireEvent.click(view.getByText('Look around')); expect(looking).toHaveBeenCalledWith(true);
+  fireEvent.click(view.getByText('Tap to look around')); expect(looking).toHaveBeenCalledWith(true);
   view.rerender(<GalleryPager points={points} index={6} looking onLookingChange={looking} onSelect={select} canHint ready interacted />);
   expect((view.getByLabelText('Next view point') as HTMLButtonElement).disabled).toBe(true);
   fireEvent.click(view.getByText('Done')); expect(looking).toHaveBeenCalledWith(false);

@@ -1755,3 +1755,31 @@ button {
 }
 @media (prefers-reduced-motion: reduce) { .gallery-scene-motion { transition: none !important; transform: none !important; } }
 .gallery-feed .scene-model-error { top: 9rem; bottom: auto; max-height: 18%; max-width: calc(100% - 6rem); }
+
+/* Browse presents a framed scene; entering it expands the same live canvas. */
+.scene-surface, .gallery-scene-card { width: 100%; height: 100%; }
+.gallery-feed { background: radial-gradient(ellipse at 50% 30%, #303542, #0c0e14 85%); }
+.gallery-scene-card {
+  position: relative;
+  overflow: hidden;
+  transform: scale(.94);
+  transform-origin: 50% 50%;
+  border-radius: 28px;
+  box-shadow: 0 0 0 1px #ffffff40, 0 0 0 7px #222630, 0 24px 60px #0009;
+  transition: transform 420ms cubic-bezier(.2,.75,.2,1), border-radius 420ms ease, box-shadow 300ms ease;
+  will-change: transform;
+  cursor: pointer;
+}
+.gallery-feed.is-looking .gallery-scene-card {
+  transform: scale(1);
+  border-radius: 0;
+  box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent, 0 0 0 transparent;
+  cursor: grab;
+}
+.gallery-feed.is-looking .gallery-scene-card:active { cursor: grabbing; }
+.gallery-feed .gallery-look { transition: background-color 200ms ease, color 200ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .gallery-scene-card, .gallery-feed .gallery-look { transition: none; }
+}
+/* R3F measures the transformed bounds; keep its drawing surface filling the card. */
+.gallery-scene-card canvas { width: 100% !important; height: 100% !important; }
