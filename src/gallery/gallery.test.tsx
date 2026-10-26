@@ -5,7 +5,6 @@ import { INITIAL_GALLERY, preferredViewerSource, readGallery } from './gallery';
 import { createSpatialDocument } from '../model/createSpatialDocument';
 import { viewPoints } from '../scene/viewPoints';
 import { useViewPointTour } from '../scene/useViewPointTour';
-import { useGallerySwipe } from './useGallerySwipe';
 import { GalleryPanel } from './GalleryPanel';
 afterEach(() => { cleanup(); localStorage.clear(); });
 it('loads both complete seed documents independently with their viewpoints', () => {
@@ -32,34 +31,6 @@ it('starts desktop gallery tours and resets the viewpoint on document changes', 
   expect(result.current.index).toBe(1);
   rerender({ doc: docs[1] });
   expect(result.current.index).toBe(0);
-});
-it('switches only from screen edges and leaves center drags to the camera', () => {
-  const traverse = vi.fn();
-  function Surface() { return <div data-testid="surface" {...useGallerySwipe(traverse)}><button>Control</button></div>; }
-  const view = render(<Surface />);
-  const surface = view.getByTestId('surface');
-  surface.setPointerCapture = vi.fn();
-  surface.hasPointerCapture = vi.fn(() => false);
-  const cameraDown = vi.fn();
-  surface.addEventListener('pointerdown', cameraDown);
-  function pointer(type: string, x: number, y: number, target: Element = surface) {
-    const event = new Event(type, { bubbles: true });
-    Object.assign(event, { pointerId: 1, clientX: x, clientY: y, isPrimary: true, pointerType: 'touch' });
-    fireEvent(target, event);
-  }
-  const bottom = window.innerHeight - 10;
-  pointer('pointerdown', 100, bottom); pointer('pointermove', 102, bottom - 100); pointer('pointerup', 102, bottom - 100);
-  expect(traverse).toHaveBeenLastCalledWith(1);
-  pointer('pointerdown', 100, 10); pointer('pointerup', 100, 110);
-  expect(traverse).toHaveBeenLastCalledWith(-1);
-  expect(cameraDown).not.toHaveBeenCalled();
-  pointer('pointerdown', 100, 300); pointer('pointermove', 100, 100); pointer('pointerup', 100, 10);
-  expect(cameraDown).toHaveBeenCalledOnce();
-  pointer('pointerdown', 100, 10); pointer('pointermove', 180, 20); pointer('pointerup', 180, 200);
-  pointer('pointerdown', 100, 10); pointer('pointercancel', 100, 200); pointer('pointerup', 100, 200);
-  pointer('pointerdown', 100, 10, view.getByText('Control')); pointer('pointerup', 100, 200);
-  pointer('pointerdown', 100, 10); pointer('pointerup', 100, 30);
-  expect(traverse).toHaveBeenCalledTimes(2);
 });
 it('opens gallery documents without offering removal', () => {
   const onOpen = vi.fn(), onChange = vi.fn();

@@ -72,3 +72,24 @@ describe('fixed view point controls', () => {
     button.remove(); input.remove();
   });
 });
+
+it('keeps Browse camera fixed and gives both drag axes to Look around', () => {
+  const camera = new PerspectiveCamera();
+  const canvas = document.createElement('canvas');
+  canvas.setPointerCapture = vi.fn(); canvas.hasPointerCapture = vi.fn(() => false);
+  runtime.state = { camera, gl: { domElement: canvas }, invalidate: vi.fn(), get: () => ({ controls: null }) };
+  const point = viewPoints(createSpatialDocument('"POV+Test/+0+1/+0+1/+0+1":"view-point: true"'))[0];
+  const traverse = vi.fn(), documents = vi.fn();
+  const view = render(<ViewPointControls point={point} galleryMode lookEnabled={false} onTraverse={traverse} onTraverseDocument={documents} />);
+  const drag = () => {
+    for (const [type, x, y] of [['pointerdown', 100, 100], ['pointermove', 140, 160], ['pointerup', 140, 160]] as const) {
+      const event = new Event(type); Object.assign(event, { pointerId: 1, clientX: x, clientY: y, button: 0, isPrimary: true }); act(() => canvas.dispatchEvent(event));
+    }
+  };
+  drag(); expect(camera.rotation.x).toBe(0); expect(camera.rotation.y).toBe(0);
+  act(() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowRight' })));
+  act(() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowDown' })));
+  expect(traverse).toHaveBeenCalledWith(1); expect(documents).toHaveBeenCalledWith(1);
+  view.rerender(<ViewPointControls point={point} galleryMode lookEnabled onTraverse={traverse} />);
+  drag(); expect(camera.rotation.x).toBeCloseTo(-.3); expect(camera.rotation.y).toBeCloseTo(-.2);
+});

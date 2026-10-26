@@ -1,3 +1,4 @@
+import { GalleryPager, markFeedHintSeen } from '../gallery/GalleryPager';
 import { t, useLocale } from '../i18n';
 import { useGallerySwipe } from '../gallery/useGallerySwipe';
 import type { ReactNode } from 'react';
@@ -33,6 +34,10 @@ import type { AxisName } from '../xyzdsl/types';
 import type { LinearStepChoice, RotationStep } from '../ui/SelectedNodeInspector';
 
 interface SceneRootProps {
+  initialViewPoint?: number;
+  onViewPointChange?: (index: number) => void;
+  galleryCanPrevious?: boolean;
+  galleryCanNext?: boolean;
   forceTour?: boolean;
   galleryOverlay?: ReactNode;
   onTraverseGallery?: (delta: number) => void;
@@ -55,9 +60,13 @@ interface SceneRootProps {
 const DEFAULT_ORBIT_TARGET: [number, number, number] = [0.6, 0.5, 0.4];
 const DEFAULT_CAMERA_POSITION: [number, number, number] = [1.4, 1.1, 1.8];
 
-export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery, document: spatialDocument, selectedNodeId, onSelectNode, editorMode, selectedNodeCanEdit, editorLinearStep, editorRotationStep, linearStepChoice, onLinearStepChoiceChange, onRotationStepChange, onMoveNode, onResizeNode, onRotateNode, onCreateNode }: SceneRootProps) {
+export function SceneRoot({ initialViewPoint = 0, onViewPointChange, galleryCanPrevious = true, galleryCanNext = true, forceTour = false, galleryOverlay, onTraverseGallery, document: spatialDocument, selectedNodeId, onSelectNode, editorMode, selectedNodeCanEdit, editorLinearStep, editorRotationStep, linearStepChoice, onLinearStepChoiceChange, onRotationStepChange, onMoveNode, onResizeNode, onRotateNode, onCreateNode }: SceneRootProps) {
   useLocale();
-  const gallerySwipe = useGallerySwipe(onTraverseGallery);
+  const gallery = Boolean(galleryOverlay);
+  const [looking, setLooking] = useState(false);
+  const [interacted, setInteracted] = useState(false);
+  const exitLooking = useCallback(() => setLooking(false), []);
+  const dismissHint = useCallback(() => { setInteracted(true); markFeedHintSeen(); }, []);
   const [quality] = useState(initialQuality);
   const [safe, setSafe] = useState(readSafeRendering);
   const [rendererGeneration, setRendererGeneration] = useState(0);
@@ -101,9 +110,12 @@ export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery
   const lights = useMemo(() => lightNodes(spatialDocument), [spatialDocument]);
   const points = useMemo(() => viewPoints(spatialDocument), [spatialDocument]);
   const orbitRef = useRef<OrbitControlType>(null);
-  const tour = useViewPointTour(spatialDocument, points.length, mobile, editorMode, forceTour || Boolean(onTraverseGallery));
+  const tour = useViewPointTour(spatialDocument, points.length, mobile, editorMode, forceTour || Boolean(onTraverseGallery), initialViewPoint, onViewPointChange);
   const pointIndex = tour.index;
   const point = pointIndex === undefined ? undefined : points[pointIndex];
+  const selectPoint = useCallback((index: number) => { dismissHint(); tour.select(index); }, [dismissHint, tour.select]);
+  const gallerySwipe = useGallerySwipe(onTraverseGallery, gallery && points.length > 1 ? tour.traverse : undefined, gallery && !looking,
+    (axis, delta) => axis === 'y' ? (delta > 0 ? galleryCanNext : galleryCanPrevious) : pointIndex !== undefined && pointIndex + delta >= 0 && pointIndex + delta < points.length, dismissHint);
   const cameraMode = point ? 'pov' : 'orbit';
   // A thin editor selection must not carry its tiny near plane into a room tour:
   // it loses depth precision and makes closely spaced model surfaces z-fight.
@@ -120,8 +132,9 @@ export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery
   const cameraRef = useRef<ThreePerspectiveCamera>(null);
 
   return (
-    <div className="scene-viewport" {...gallerySwipe}>
+    <div className={`scene-viewport${gallery ? " gallery-feed" : ""}`} {...gallerySwipe.handlers}>
     {galleryOverlay}
+    <div className="gallery-scene-motion" style={gallery ? gallerySwipe.style : undefined}>
     <RendererBoundary key={rendererGeneration} onRetry={retryRenderer}>
     <Canvas
       className="scene-canvas"
@@ -148,8 +161,8 @@ export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery
         <LightSourceMarker key={node.id} node={node} selected={node.id === selectedNodeId} onSelect={onSelectNode} />
       ))}
       {selectedNode && !point && (editorMode || (!selectedNode.metadata?.viewPoint && !selectedNode.light)) ? <SelectionBounds node={selectedNode} /> : null}
-      {cameraMode === 'orbit' ? <OrbitControls ref={orbitRef} makeDefault target={orbitTarget} maxPolarAngle={Math.PI} /> : null}
-      <ViewPointControls point={point} orbitTarget={tour.orbitTarget} onTraverse={tour.traverse} onExit={tour.exit} />
+      {cameraMode === 'orbit' ? <OrbitControls enabled={!gallery || looking} ref={orbitRef} makeDefault target={orbitTarget} maxPolarAngle={Math.PI} /> : null}
+      <ViewPointControls lookEnabled={!gallery || looking} galleryMode={gallery} onTraverseDocument={!looking ? onTraverseGallery : undefined} point={point} orbitTarget={tour.orbitTarget} onTraverse={tour.traverse} onExit={gallery && looking ? exitLooking : tour.exit} />
       <CameraClipController nodes={cameraSizingNodes} scale={sceneScale} selectionBounds={selectionBounds} />
       <EditorSelectionControls
         active={editorMode && cameraMode === 'orbit'}
@@ -173,13 +186,14 @@ export function SceneRoot({ forceTour = false, galleryOverlay, onTraverseGallery
       {preparation === 'context-lost' && <button onClick={retryRenderer}>{t("Restart viewer")}</button>}
     </div>}
     </RendererBoundary>
+    </div>
     {diagnostics && <button style={{ position: 'absolute', bottom: 100, left: 12, zIndex: 30 }} onClick={() => {
       const extension = rendererRef.current?.getContext().getExtension('WEBGL_lose_context');
       if (!extension) return;
       extension.loseContext();
       setTimeout(() => extension.restoreContext(), 1000);
     }}>{t("Test graphics recovery")}</button>}
-    {(mobile || Boolean(galleryOverlay)) ? point && points.length > 1 && (
+    {gallery ? <GalleryPager points={points} index={pointIndex} looking={looking} onLookingChange={value => { dismissHint(); setLooking(value); }} onSelect={selectPoint} canHint={Boolean(onTraverseGallery) && galleryCanNext} ready={preparation === 'ready' || preparation === 'error'} interacted={interacted} /> : mobile ? point && points.length > 1 && (
       <nav className="view-point-overlays" aria-label={t("View point traversal")}>
         <span className="view-point-status" role="status">{t("View point")} {(pointIndex ?? 0) + 1} {t("of")} {points.length}</span>
         <button type="button" aria-label={t("Previous view point")} onClick={() => tour.traverse(-1)}>‹</button>

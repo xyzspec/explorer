@@ -4,7 +4,8 @@ import { Euler, MathUtils, Quaternion, Vector3 } from 'three';
 import type { SpatialNode } from '../model/SpatialNode';
 import type { OrbitControls } from 'three-stdlib';
 
-export function ViewPointControls({ point, orbitTarget, onTraverse, onExit }: {
+export function ViewPointControls({ point, orbitTarget, onTraverse, onExit, lookEnabled = true, galleryMode = false, onTraverseDocument }: {
+  lookEnabled?: boolean; galleryMode?: boolean; onTraverseDocument?: (delta: number) => void;
   point?: SpatialNode; orbitTarget?: [number, number, number]; onTraverse: (delta: number) => void; onExit?: () => void;
 }) {
   const { camera, gl, invalidate, get } = useThree();
@@ -34,7 +35,7 @@ export function ViewPointControls({ point, orbitTarget, onTraverse, onExit }: {
     const angles = new Euler().setFromQuaternion(camera.quaternion, 'YXZ');
     let drag: { id: number; lastX: number; lastY: number } | undefined;
     const down = (event: PointerEvent) => {
-      if (drag || event.button !== 0 || !event.isPrimary) return;
+      if (!lookEnabled || drag || event.button !== 0 || !event.isPrimary) return;
       drag = { id: event.pointerId, lastX: event.clientX, lastY: event.clientY };
       element.setPointerCapture(event.pointerId);
     };
@@ -58,6 +59,12 @@ export function ViewPointControls({ point, orbitTarget, onTraverse, onExit }: {
       const target = event.target;
       if (target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select, [role="textbox"]'))) return;
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.repeat) return;
+      if (galleryMode) {
+        if (['ArrowLeft', 'ArrowRight'].includes(event.code)) { event.preventDefault(); onTraverse(event.code === 'ArrowRight' ? 1 : -1); }
+        else if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(event.code) && onTraverseDocument) { event.preventDefault(); onTraverseDocument(['ArrowDown', 'PageDown'].includes(event.code) ? 1 : -1); }
+        else if (event.code === 'Escape') onExit?.();
+        return;
+      }
       if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Escape'].includes(event.code)) {
         event.preventDefault();
         if (event.code === 'Escape') onExit?.();
@@ -80,6 +87,6 @@ export function ViewPointControls({ point, orbitTarget, onTraverse, onExit }: {
       window.removeEventListener('blur', cancel);
       if (drag && element.hasPointerCapture(drag.id)) element.releasePointerCapture(drag.id);
     };
-  }, [point, camera, gl, invalidate, onTraverse, onExit, get, orbitTarget]);
+  }, [point, camera, gl, invalidate, onTraverse, onExit, get, orbitTarget, lookEnabled, galleryMode, onTraverseDocument]);
   return null;
 }

@@ -9,7 +9,7 @@ export function GalleryPanel({ documents, onChange, onOpen }: {
   const [error, setError] = useState('');
   return <section className="gallery-panel">
     <h2>{t("Gallery")}</h2>
-    <p>{t("Explore separate XYZDSL documents. Swipe inward from the top or bottom edge to change documents, and use the viewpoint arrows to tour each space.")}</p>
+    <p>{t("Swipe vertically between documents and horizontally between viewpoints. Tap Look around to explore a space.")}</p>
     <label>{t("Add XYZDSL documents")}<input type="file" accept=".xyzdsl,.xyz" multiple onChange={async event => {
       const files = Array.from(event.target.files ?? []);
       event.target.value = '';

@@ -1701,10 +1701,6 @@ button {
 .gallery-panel li { display: flex; gap: .5rem; margin: .75rem 0; }
 .gallery-panel li > button:first-child { flex: 1; text-align: left; }
 .gallery-panel small { display: block; margin-top: .5rem; opacity: .6; }
-@media (prefers-reduced-motion: no-preference) {
-  .scene-viewport:has(.gallery-navigation) { animation: gallery-arrive .22s ease-out; }
-  @keyframes gallery-arrive { from { opacity: .35; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-}
 .scene-viewport:has(.gallery-navigation) { touch-action: none; height: 100dvh; }
 .gallery-share { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
 .gallery-share button { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px; }
@@ -1732,3 +1728,30 @@ button {
 .language-menu:focus-within { outline: 2px solid #93c5fd; outline-offset: 3px; }
 .language-menu select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .mode-controls { right: 6rem; }
+
+/* Feed prototype: one live scene, with paging UI outside the moving surface. */
+.gallery-scene-motion { width: 100%; height: 100%; }
+.gallery-feed { overflow: hidden; background: #151820; }
+.gallery-pager { position: absolute; z-index: 22; bottom: max(1.25rem, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: .35rem; color: white; max-width: calc(100% - 6rem); text-align: center; text-shadow: 0 1px 6px #000; }
+.gallery-pager button { color: white; background: #151820bb; border: 1px solid #ffffff30; cursor: pointer; min-width: 44px; min-height: 44px; border-radius: 999px; }
+.gallery-pager button:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+.gallery-pager button:disabled { opacity: .3; cursor: default; }
+.gallery-look { padding: .5rem 1.2rem; backdrop-filter: blur(12px); }
+.gallery-look.is-active { background: #f4f6fb; color: #151820; }
+.gallery-mode-hint { font-size: .7rem; opacity: .8; }
+.gallery-pagination { display: flex; align-items: center; justify-content: center; }
+.gallery-pagination > button { font-size: 1.4rem; }
+.gallery-pagination .gallery-dot { border: 0; background: none; min-width: 28px; width: 28px; display: grid; place-items: center; }
+.gallery-dot span { width: 6px; height: 6px; background: #ffffff70; border-radius: 99px; box-shadow: 0 1px 4px #0008; }
+.gallery-dot[aria-current] span { width: 16px; background: white; }
+.gallery-feed .gallery-edge--previous { left: auto; right: .8rem; top: auto; bottom: auto; top: calc(50% - 56px); transform: none; }
+.gallery-feed .gallery-edge-bottom { left: auto; right: .8rem; bottom: auto; top: calc(50% + 4px); transform: none; }
+.gallery-feed .gallery-back { bottom: auto; top: 5rem; left: max(.75rem, env(safe-area-inset-left)); transform: none; }
+.gallery-swipe-hint { display: flex; flex-direction: column; align-items: center; font-size: .8rem; padding: .6rem 1rem; background: #151820cc; border-radius: 12px; }
+.gallery-swipe-hint span { font-size: 1.5rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .gallery-swipe-hint span { animation: feed-hint-bounce 650ms ease-in-out 2; }
+  @keyframes feed-hint-bounce { 50% { transform: translateY(-8px); } }
+}
+@media (prefers-reduced-motion: reduce) { .gallery-scene-motion { transition: none !important; transform: none !important; } }
+.gallery-feed .scene-model-error { top: 9rem; bottom: auto; max-height: 18%; max-width: calc(100% - 6rem); }

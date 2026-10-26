@@ -1,5 +1,13 @@
 /** English source messages are stable keys; user content and XYZDSL syntax stay unchanged. */
 export const fr: Record<string, string> = {
+  "Look around": "Regarder autour",
+  "Done": "Terminé",
+  "Drag to look around": "Glissez pour regarder autour",
+  "Swipe sideways for viewpoints": "Balayez horizontalement pour changer de vue",
+  "Swipe up for the next space": "Balayez vers le haut pour l’espace suivant",
+  "View point {number}": "Point de vue {number}",
+  "Go to {name}, {current} of {total}": "Aller à {name}, {current} sur {total}",
+  "Swipe vertically between documents and horizontally between viewpoints. Tap Look around to explore a space.": "Balayez verticalement entre les documents et horizontalement entre les vues. Touchez Regarder autour pour explorer un espace.",
   "Document {current} of {total}": "Document {current} sur {total}",
   "Endpoint is not a valid WebSocket URL.": "L’adresse du serveur WebSocket n’est pas valide.",
   "Unable to load blockchain tip.": "Impossible de charger le dernier bloc.",

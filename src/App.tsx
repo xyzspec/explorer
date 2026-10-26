@@ -187,6 +187,10 @@ export default function App() {
     window.document.title = galleryLink.document.title;
     return () => { window.document.title = previousTitle; };
   }, [galleryLink.document]);
+  const rememberedViewpoints = useRef<Record<string, number>>({});
+  const rememberViewpoint = useCallback((index: number) => {
+    if (galleryEntry) rememberedViewpoints.current[galleryEntry.id] = index;
+  }, [galleryEntry]);
   const galleryDocument = useMemo(() => galleryEntry ? createSpatialDocument(galleryEntry.source) : undefined, [galleryEntry]);
   const changeGallery = (next: GalleryDocument[]) => {
     setGalleryDocuments(next);
@@ -910,6 +914,10 @@ export default function App() {
         resolveAsset={galleryEntry || viewingRemote ? undefined : assets.resolve}
         document={galleryDocument ?? (appMode === 'viewer' ? viewerDocument : document)}
         forceTour={Boolean(galleryEntry)}
+        initialViewPoint={galleryEntry ? rememberedViewpoints.current[galleryEntry.id] ?? 0 : 0}
+        onViewPointChange={rememberViewpoint}
+        galleryCanPrevious={galleryIndex > 0}
+        galleryCanNext={galleryIndex < galleryDocuments.length - 1}
         onTraverseGallery={galleryEntry && !galleryLink.requested ? traverseGallery : undefined}
         galleryOverlay={galleryEntry && <GalleryNavigation document={galleryEntry} index={galleryIndex}
           count={galleryDocuments.length} isolated={galleryLink.requested} onBack={backToGallery} onTraverse={traverseGallery} />}
