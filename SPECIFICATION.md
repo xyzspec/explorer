@@ -361,15 +361,25 @@ Y is vertical. `model-align: floor` places the corrected model at the bottom of
 its target box. Ordinary `rotation` still rotates the fitted object and its
 alignment offset together; use it for scene placement after reorientation.
 
-## Box surfaces
+<a id="box-surfaces"></a>
 
-`box-surface` creates six ordinary solid box panels inside a concrete box:
+## Box shells
+
+`box-shell` is the canonical enclosure property. `box-surface` and its six
+`box-surface-*` face properties remain compatibility aliases for `box-shell`
+and `box-shell-*`. Both spellings resolve in authored declaration order; the
+later property wins, including overrides on references and `none` resets.
+The `surface` attachment property, `observable-*`, and `box-grid-*` names are
+unchanged. Bundled gallery documents and the default local draft use the new
+spelling. Saved gallery sources migrate on load without replacing user content.
+
+`box-shell` creates six ordinary solid box panels inside a concrete box:
 
 ```xyzdsl
-"Room/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white;"
+"Room/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white;"
 ```
 
-The simplest syntax is `box-surface: <thickness> <color>`, or `box-surface: none`.
+The simplest syntax is `box-shell: <thickness> <color>`, or `box-shell: none`.
 Face shorthands and overrides are specified below.
 Thickness uses the existing path-length grammar: unpadded integer digits with
 an optional `d`, `c`, or `m` suffix, or metres without a suffix. It must be
@@ -437,7 +447,7 @@ Face names and six-value order are **top, right, bottom, left, front, back**.
 Top is +Y (ceiling), right +X, bottom −Y (floor), left −X, front −Z,
 and back +Z, in the enclosure's local axes.
 
-Both `box-surface` and enclosure `observable` accept comma-separated values:
+Both `box-shell` and enclosure `observable` accept comma-separated values:
 
 | Count | Expansion |
 | --- | --- |
@@ -448,15 +458,15 @@ Both `box-surface` and enclosure `observable` accept comma-separated values:
 
 Other counts and empty values are invalid. Commas inside color functions such
 as `rgb(255, 0, 0)` are not separators. Every surface value is a positive path
-length followed by a color, or `none`. Use `box-surface-top`,
-`box-surface-right`, `box-surface-bottom`, `box-surface-left`,
-`box-surface-front`, or `box-surface-back` to override one panel. Each longhand
+length followed by a color, or `none`. Use `box-shell-top`,
+`box-shell-right`, `box-shell-bottom`, `box-shell-left`,
+`box-shell-front`, or `box-shell-back` to override one panel. Each longhand
 accepts exactly one value. `none` on a face omits that panel; a single
-`box-surface: none` disables the enclosure. An enabled enclosure with all faces
+`box-shell: none` disables the enclosure. An enabled enclosure with all faces
 omitted remains a non-rendering container.
 
 ```xyzdsl
-"Sal/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white; box-surface-top: none; box-surface-bottom: 2d gray;"
+"Sal/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white; box-shell-top: none; box-shell-bottom: 2d gray;"
 ```
 
 Observability has matching `observable-top`, `observable-right`,
@@ -469,8 +479,8 @@ Visibility still uses each panel's center plane, follows transforms, suppresses
 shadows and selection rays while hidden, and leaves physical collision active.
 
 ```xyzdsl
-"Sal/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white; observable-top: true;"
-"Other/+6+4/+1+4/+1+4":"box-surface: 1d white; observable: true; observable-bottom: false;"
+"Sal/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white; observable-top: true;"
+"Other/+6+4/+1+4/+1+4":"box-shell: 1d white; observable: true; observable-bottom: false;"
 ```
 
 The first example hides only the ceiling when viewed from above. The second
@@ -492,13 +502,13 @@ omitted face has no rendering effect.
 
 ### Interior coordinates for enclosure children
 
-Children of a `box-surface` enclosure start at its interior corner. Local
+Children of a `box-shell` enclosure start at its interior corner. Local
 `+0` on X, Y, and Z lies on the inside of the left, bottom, and front panels,
 respectively. Missing panels contribute zero inset. The available child-layout
 extent is the outer local size minus the two opposing panel thicknesses.
 
 ```xyzdsl
-"Sal/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white;"
+"Sal/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white;"
 "Sal/Bed/+0+155c/+0+8d/+0+205c":"model: salouis/wooden_bed.glb"
 ```
 
@@ -515,7 +525,7 @@ enclosure ancestor, including through namespace-only groups. Nested enclosures
 introduce their own interior coordinate frames. Ordinary intermediate containers
 keep their usual coordinate rules. Generated panels stay in the exterior frame,
 and hiding a panel with `observable` does not remove its inset; only `none`
-removes a panel. `box-surface: none` restores ordinary container coordinates.
+removes a panel. `box-shell: none` restores ordinary container coordinates.
 
 This changes earlier enclosure child layout: existing authored child offsets
 that already included wall thickness should remove that manual allowance.
@@ -532,7 +542,7 @@ Other enclosures and non-overlapping panels remain unchanged. Intersection is
 therefore a per-panel operation, not intersection of the entire shell.
 
 ```xyzdsl
-"Room/+1+4/+1+4/+1+4":"box-surface: 1d white; observable: true"
+"Room/+1+4/+1+4/+1+4":"box-shell: 1d white; observable: true"
 "Window/+9d+3d/+2+1/+2+1":"operation: subtraction"
 ```
 
@@ -553,14 +563,14 @@ Clipped primitives continue to use the existing operand clipping rules.
 ## Surface-attached components
 
 `surface` attaches a concrete child to the interior faces of its nearest concrete
-`box-surface` parent. It accepts `walls` (left, front, right, back), `all` (all six
+`box-shell` parent. It accepts `walls` (left, front, right, back), `all` (all six
 faces), or distinct comma-separated face names. It is local, not inherited by
 ordinary children; references retain it. Namespace-only declarations cannot
 attach. An explicit missing face produces a diagnostic and no copy for that
 face; `walls` and `all` silently skip omitted panels.
 
 ```xyzdsl
-"Sal/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white; observable: true;"
+"Sal/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white; observable: true;"
 "Sal/Tiling/+0+85c/+0+86c/+0+2c":"surface: walls; model: salouis/tile_triad.glb; reset-axes: 90,0,0; repeat: x; repeat-gap: 1m; repeat-edge: clip;"
 ```
 
@@ -672,14 +682,14 @@ tour mode does not reconstruct removed geometry.
 
 ## Grid partitions
 
-A concrete `box-surface` enclosure can divide its clear interior into a
+A concrete `box-shell` enclosure can divide its clear interior into a
 three-dimensional grid with equal or unequal tracks, omitted cells, and merged
 rectangular areas. These are local structural properties, not inherited
 namespace styles. References retain them and can override them in declaration
 order. Ordinary descendants do not acquire a grid or cell selection.
 
 ```xyzdsl
-"Cabinet/+0+12d/+0+18d/+0+4d":"box-surface: 2c white; box-surface-front: none; box-grid: 3 4 2; box-partition: 1c gray;"
+"Cabinet/+0+12d/+0+18d/+0+4d":"box-shell: 2c white; box-shell-front: none; box-grid: 3 4 2; box-partition: 1c gray;"
 "Cabinet/Item/+0+20c/+0+25c/+0+15c":"cell: 2 3 1; model: item.glb;"
 ```
 
@@ -699,8 +709,8 @@ cell without internal geometry and needs no partition style. Any larger grid
 requires an explicit `box-partition`; it never guesses a thickness or color from
 potentially different outer faces. Grid and cell rules require concrete
 objects, including when used in templates. A grid requires an active
-`box-surface` enclosure; cancelling the shell on a reference also requires
-cancelling its grid. Existing plain-box restrictions for `box-surface` apply.
+`box-shell` enclosure; cancelling the shell on a reference also requires
+cancelling its grid. Existing plain-box restrictions for `box-shell` apply.
 
 ### Clear dimensions and cell layout
 
@@ -739,7 +749,7 @@ Use path lengths (`d` decimetres, `c` centimetres, `m` millimetres) or positive
 fractional weights for explicit tracks, for example:
 
 ```xyzdsl
-"Shelf/+0+14d/+0+10d/+0+10d":"box-surface: 1d white; box-partition: 1d gray; box-grid-columns: 30c 1fr 2fr;"
+"Shelf/+0+14d/+0+10d/+0+10d":"box-shell: 1d white; box-partition: 1d gray; box-grid-columns: 30c 1fr 2fr;"
 ```
 
 Subtract outer panels and all divider widths first, then fixed tracks. Divide
@@ -765,7 +775,7 @@ separate rectangular areas to describe the occupied L-shaped footprint.
 This single enclosure reproduces the bedroom and annex dimensions:
 
 ```xyzdsl
-"Rooms/+0+366c/+0+330c/+0+622c":"box-surface: 1d #fffdd0; box-partition: 1d #fffdd0; box-grid-columns: 140c 196c; box-grid-rows: 1; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"
+"Rooms/+0+366c/+0+330c/+0+622c":"box-shell: 1d #fffdd0; box-partition: 1d #fffdd0; box-grid-columns: 140c 196c; box-grid-rows: 1; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"
 "Rooms/Bed/+1356m+155c/+0+8d/+1d+205c":"cell: bedroom; model: salouis/wooden_bed.glb;"
 "Rooms/AnnexLighting/+728m+34c/+2975m+7c/+133c+301m":"cell: annex; light-source: true; light-color: #ffffff; light-intensity: 10; light-distance: 0;"
 "Rooms/WallTiling/+0+85c/+0+86c/+0+2c":"cell: bedroom; surface: walls; model: salouis/tile_triad.glb; reset-axes: 90,0,0; repeat: x; repeat-gap: 1m; repeat-edge: clip;"
@@ -779,7 +789,7 @@ extent `1.96 × 3.10 × 2.21` metres. The merged bedroom recovers the 10 cm divi
 between its two column tracks. The rear-left cell has no floor or ceiling;
 boundaries facing that empty space still enclose the adjacent occupied areas.
 These newly exposed walls occupy the reserved `box-partition` thickness and
-use the corresponding directional `box-surface` color and observability. Setting
+use the corresponding directional `box-shell` color and observability. Setting
 that face to `none` also omits its exposed notch walls. Shared walls between
 occupied areas keep the partition color and remain non-observable.
 

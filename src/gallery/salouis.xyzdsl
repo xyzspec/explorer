@@ -1,8 +1,8 @@
-"Sal/+0+366c/+0+330c/+0+391c":"box-surface: 1d #fffdd0; observable: true;"
+"Sal/+0+366c/+0+330c/+0+391c":"box-shell: 1d #fffdd0; observable: true;"
 "Sal/CeilingLamp/+1628m+34c/++7c/+193c+301m":"model: salouis/ceiling_lamp.glb"
 "Sal/Lighting/+1628m+34c/+2975m+7c/+193c+301m":"light-source: true; light-color: #ffffff; light-intensity: 10; light-distance: 0"
 
-"Sal2/+15d+216c/+0+33d/+391c+231c":"box-surface: 1d #fffdd0; box-surface-front: none; observable: true;"
+"Sal2/+15d+216c/+0+33d/+391c+231c":"box-shell: 1d #fffdd0; box-shell-front: none; observable: true;"
 "Sal2/Lighting/+728m+34c/+2975m+7c/+133c+301m":"light-source: true; light-color: #ffffff; light-intensity: 10; light-distance: 0"
 
 "Sal/POV+1/+323m+1d/+1+1d/+3228m+101m" : "view-point: true; rotation: 0, -45, 0"

@@ -7,6 +7,22 @@ import { viewPoints } from '../scene/viewPoints';
 import { useViewPointTour } from '../scene/useViewPointTour';
 import { GalleryPanel } from './GalleryPanel';
 afterEach(() => { cleanup(); localStorage.clear(); });
+it('migrates saved gallery sources without replacing customized documents', () => {
+  const source = '"Custom/+0+2/+0+2/+0+2":"box-surface: 1d pink; box-surface-front: none"';
+  localStorage.setItem('xyzdsl-gallery', JSON.stringify([{ id: 'custom', title: 'My room', source }]));
+  const expected = [{ id: 'custom', title: 'My room', source: source.replaceAll('box-surface', 'box-shell') }];
+  expect(readGallery()).toEqual(expected);
+  expect(JSON.parse(localStorage.getItem('xyzdsl-gallery')!)).toEqual(expected);
+  expect(readGallery()).toEqual(expected);
+});
+it('retains a migrated custom gallery when storage cannot be updated', () => {
+  const source = '"Custom/+0+2/+0+2/+0+2":"box-surface: 1d pink"';
+  localStorage.setItem('xyzdsl-gallery', JSON.stringify([{ id: 'custom', title: 'My room', source }]));
+  const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Storage full'); });
+  try {
+    expect(readGallery()).toEqual([{ id: 'custom', title: 'My room', source: source.replace('box-surface', 'box-shell') }]);
+  } finally { write.mockRestore(); }
+});
 it('loads both complete seed documents independently with their viewpoints', () => {
   const documents = INITIAL_GALLERY.map(entry => createSpatialDocument(entry.source));
   expect(INITIAL_GALLERY.map(entry => entry.title)).toEqual(['LePapayer', 'Salouis']);

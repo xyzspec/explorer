@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from 'three';
 import { createSpatialDocument } from '../model/createSpatialDocument';
 import { evaluateCsgExpressionGeometry } from './csgGeometry';
-const room = '"Room/+1+4/+1+4/+1+4":"box-surface: 1d white; observable: true"';
+const room = '"Room/+1+4/+1+4/+1+4":"box-shell: 1d white; observable: true"';
 describe('enclosure panel CSG', () => {
   it('cuts a real opening while retaining the surrounding wall and its properties', () => {
     const doc = createSpatialDocument(`${room}\n"Window/+9d+3d/+2+1/+2+1":"operation: subtraction"`);
@@ -45,7 +45,7 @@ describe('enclosure panel CSG', () => {
   it('does not apply a tool to later enclosures or omitted faces', () => {
     const doc = createSpatialDocument(`"Window/+9d+3d/+2+1/+2+1":"operation: subtraction"\n${room}`);
     expect(doc.csgExpressions).toHaveLength(0);
-    const open = createSpatialDocument(`${room.replace('observable: true', 'box-surface-left: none')}\n"Window/+9d+3d/+2+1/+2+1":"operation: subtraction"`);
+    const open = createSpatialDocument(`${room.replace('observable: true', 'box-shell-left: none')}\n"Window/+9d+3d/+2+1/+2+1":"operation: subtraction"`);
     expect(open.csgExpressions).toHaveLength(0);
   });
 });

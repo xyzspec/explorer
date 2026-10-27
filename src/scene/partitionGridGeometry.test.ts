@@ -42,7 +42,7 @@ describe('shared grid solid', () => {
   geometry.dispose();
  });
  it('cuts partition junctions and uses the cut geometry for picking and collision', () => {
-  const doc=createSpatialDocument('"Room/+0+22d/+0+22d/+0+22d":"box-surface: 1d white; box-grid: 2 2 2; box-partition: 1d gray"\n"Cut/+0+22d/+3d+4d/+3d+4d":"operation: subtraction"');
+  const doc=createSpatialDocument('"Room/+0+22d/+0+22d/+0+22d":"box-shell: 1d white; box-grid: 2 2 2; box-partition: 1d gray"\n"Cut/+0+22d/+3d+4d/+3d+4d":"operation: subtraction"');
   expect(doc.diagnostics).toEqual([]);
   const expression=doc.csgExpressions.find(e=>e.base.geometry.partitionGrid)!;
   const geometry=evaluateCsgExpressionGeometry(expression);

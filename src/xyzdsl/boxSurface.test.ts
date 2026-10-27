@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createSpatialDocument } from '../model/createSpatialDocument';
 import { selectionTargetForNodeId } from '../selection';
 
-const room = '"Room/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white;"';
+const room = '"Room/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white;"';
 const explicit = [
   '"Room/+10d+366c/+10d+330c/+10d+391c":""',
   '"Room/Ceiling/++/++1d/++":"color: white"',
@@ -14,9 +14,9 @@ const explicit = [
 ].join('\n');
 const panels = (source: string) => createSpatialDocument(source).renderNodes.filter(n => n.metadata?.surfaceFace);
 
-describe('box-surface', () => {
+describe('box-shell', () => {
   it.each(['', 'rotation: 0,90,0;'])('matches six explicit panels including transforms (%s)', rotation => {
-    const actual = createSpatialDocument(room.replace('box-surface:', `${rotation}box-surface:`));
+    const actual = createSpatialDocument(room.replace('box-shell:', `${rotation}box-shell:`));
     const expected = createSpatialDocument(explicit.replace(':""', `:"${rotation}"`));
     expect(actual.diagnostics).toEqual([]);
     expect(actual.renderNodes).toHaveLength(6);
@@ -42,13 +42,13 @@ describe('box-surface', () => {
     expect(doc.renderNodes).toHaveLength(0);
   });
   it('resolves fill before creating panels', () => {
-    const doc = createSpatialDocument('"Parent/+0+4/+0+3/+0+4":""\n"Parent/Room/++/++/++":"box-surface: 1d white"');
+    const doc = createSpatialDocument('"Parent/+0+4/+0+3/+0+4":""\n"Parent/Room/++/++/++":"box-shell: 1d white"');
     expect(doc.diagnostics).toEqual([]);
     expect(doc.renderNodes).toHaveLength(6);
     expect(doc.renderNodes[0].box.width).toBe(4);
   });
   it('supports anonymous boxes', () => {
-    const doc = createSpatialDocument('"+1+4/+2+3/+3+4":"box-surface: 1d white"');
+    const doc = createSpatialDocument('"+1+4/+2+3/+3+4":"box-shell: 1d white"');
     expect(doc.diagnostics).toEqual([]);
     expect(doc.renderNodes).toHaveLength(6);
     expect(doc.renderNodes[0].bounds.minX).toBeCloseTo(1);
@@ -57,12 +57,12 @@ describe('box-surface', () => {
   it('copies reference surfaces and supports explicit cancellation', () => {
     const source = `${room}\n"Copy/+0+4/+0+4/+0+4":"ref: Room"`;
     expect(panels(source)).toHaveLength(12);
-    const cancelled = createSpatialDocument(source.replace('ref: Room', 'ref: Room; box-surface: none'));
+    const cancelled = createSpatialDocument(source.replace('ref: Room', 'ref: Room; box-shell: none'));
     expect(cancelled.diagnostics).toEqual([]);
     expect(cancelled.renderNodes).toHaveLength(7);
   });
   it('scales reference panels and thickness exactly once', () => {
-    const doc = createSpatialDocument('"Template/+0+2/+0+2/+0+2":"box-surface: 1d white"\n"Copy/+3+4/+0+6/+0+8":"ref: Template; ref-scale: true"');
+    const doc = createSpatialDocument('"Template/+0+2/+0+2/+0+2":"box-shell: 1d white"\n"Copy/+3+4/+0+6/+0+8":"ref: Template; ref-scale: true"');
     expect(doc.diagnostics).toEqual([]);
     const floor = doc.renderNodes.find(n => n.namespacePath?.startsWith('Copy/') && n.metadata?.surfaceFace === 'bottom')!;
     expect(floor.bounds.maxX - floor.bounds.minX).toBeCloseTo(4);
@@ -70,7 +70,7 @@ describe('box-surface', () => {
     expect(floor.bounds.maxZ - floor.bounds.minZ).toBeCloseTo(8);
   });
   it('repeats surfaces with unique deterministic identities', () => {
-    const source = '"Parent/+0+6/+0+2/+0+2":""\n"Parent/Room/+0+2/++/++":"box-surface: 1d white; repeat: x; repeat-edge: clip"';
+    const source = '"Parent/+0+6/+0+2/+0+2":""\n"Parent/Room/+0+2/++/++":"box-shell: 1d white; repeat: x; repeat-edge: clip"';
     const doc = createSpatialDocument(source);
     expect(doc.diagnostics).toEqual([]);
     expect(doc.renderNodes).toHaveLength(18);
@@ -79,7 +79,7 @@ describe('box-surface', () => {
     expect(doc.renderNodes.every(n => n.clippingPlanes?.length)).toBe(true);
   });
   it('omits an entire root when panels exceed the generation budget', () => {
-    const doc = createSpatialDocument('"Parent/+0+4000/+0+2/+0+2":""\n"Parent/Room/+0+2/++/++":"box-surface: 1d white; repeat: x"');
+    const doc = createSpatialDocument('"Parent/+0+4000/+0+2/+0+2":""\n"Parent/Room/+0+2/++/++":"box-shell: 1d white; repeat: x"');
     expect(doc.renderNodes).toHaveLength(0);
     expect(doc.diagnostics.some(d => d.message.includes('budget'))).toBe(true);
   });
@@ -90,20 +90,20 @@ describe('box-surface', () => {
     expect(doc.csgExpressions).toHaveLength(3);
   });
   it('keeps subtree surfaces when copying a compound template', () => {
-    const doc = createSpatialDocument('"Template":""\n"Template/Room/+0+2/+0+2/+0+2":"box-surface: 1d white"\n"Copy/+0+4/+0+4/+0+4":"ref: Template; ref-scale: true"');
+    const doc = createSpatialDocument('"Template":""\n"Template/Room/+0+2/+0+2/+0+2":"box-shell: 1d white"\n"Copy/+0+4/+0+4/+0+4":"ref: Template; ref-scale: true"');
     expect(doc.diagnostics).toEqual([]);
     expect(doc.renderNodes).toHaveLength(6);
     expect(doc.renderNodes.find(n => n.metadata?.surfaceFace === 'bottom')!.bounds.maxY).toBeCloseTo(.2);
   });
   it('resolves chained references and local overrides', () => {
-    const doc = createSpatialDocument(`${room}\n"Copy/+0+4/+0+4/+0+4":"ref: Room"\n"Third/+0+4/+0+4/+0+4":"ref: Copy; box-surface: 2d blue"`);
+    const doc = createSpatialDocument(`${room}\n"Copy/+0+4/+0+4/+0+4":"ref: Room"\n"Third/+0+4/+0+4/+0+4":"ref: Copy; box-shell: 2d blue"`);
     expect(doc.diagnostics).toEqual([]);
     expect(doc.renderNodes).toHaveLength(18);
     expect(doc.renderNodes.filter(n => n.material.color === 'blue')).toHaveLength(6);
   });
 
   it('rejects namespace-only rules even when referenced', () => {
-    const doc = createSpatialDocument('"Template":"box-surface: 1d white"\n"Copy/+0+4/+0+4/+0+4":"ref: Template"');
+    const doc = createSpatialDocument('"Template":"box-shell: 1d white"\n"Copy/+0+4/+0+4/+0+4":"ref: Template"');
     expect(doc.diagnostics.some(d => d.message.includes('concrete box'))).toBe(true);
     expect(doc.renderNodes).toHaveLength(0);
   });

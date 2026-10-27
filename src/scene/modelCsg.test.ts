@@ -63,7 +63,7 @@ describe('repeated model CSG', () => {
   geometry.dispose();material.dispose();
  });
  it('cuts a wall and its repeated attached tiles with one primitive tool', () => {
-  const doc = createSpatialDocument('"Room/+1+4/+1+4/+1+4":"box-surface: 1d white"\n"Room/T/+0+1/+0+1/+0+2c":"surface: front; model: tile.glb; repeat: x"\n"Window/+12d+3/+12d+5d/+9d+3d":"operation: subtraction"');
+  const doc = createSpatialDocument('"Room/+1+4/+1+4/+1+4":"box-shell: 1d white"\n"Room/T/+0+1/+0+1/+0+2c":"surface: front; model: tile.glb; repeat: x"\n"Window/+12d+3/+12d+5d/+9d+3d":"operation: subtraction"');
   expect(doc.diagnostics).toEqual([]);
   expect(doc.csgExpressions).toHaveLength(1);
   expect(doc.csgExpressions[0].base.metadata?.surfaceFace).toBe('front');

@@ -7,7 +7,7 @@ export const SURFACE_FACES: SurfaceFace[] = ['top', 'right', 'bottom', 'left', '
 export const SURFACE_DIRECTIONS: Record<SurfaceFace, XyzDslObservable> = {
   top: '+y', right: '+x', bottom: '-y', left: '-x', front: '-z', back: '+z',
 };
-export const SURFACE_PROPERTIES = SURFACE_FACES.flatMap(face => [`box-surface-${face}`, `observable-${face}`]);
+export const SURFACE_PROPERTIES = SURFACE_FACES.flatMap(face => [`box-shell-${face}`, `observable-${face}`]);
 
 // Commas inside CSS color functions are not shorthand separators.
 function values(raw: string): string[] {
@@ -33,7 +33,7 @@ function expand<T>(items: T[]): T[] {
 export function parseBoxSurfaceDeclaration(
   declarations: XyzDslPropertyDeclaration[], diagnostics: string[], base?: XyzDslBoxSurfaceSpec | null,
 ): XyzDslBoxSurfaceSpec | null | undefined {
-  if (base === undefined && !declarations.some(d => d.property === 'box-surface' || SURFACE_PROPERTIES.includes(d.property) || (d.property === 'observable' && d.value.includes(',')))) return undefined;
+  if (base === undefined && !declarations.some(d => d.property === 'box-shell' || SURFACE_PROPERTIES.includes(d.property) || (d.property === 'observable' && d.value.includes(',')))) return undefined;
   let active = Boolean(base);
   const faces = Object.fromEntries(SURFACE_FACES.map(face => [face, base?.faces[face] ?? null])) as XyzDslBoxSurfaceSpec['faces'];
   const observable = { ...base?.observable };
@@ -41,11 +41,11 @@ export function parseBoxSurfaceDeclaration(
   let mentioned = base !== undefined;
   for (const declaration of declarations) {
     const { property, value } = declaration;
-    const surface = property === 'box-surface' || property.startsWith('box-surface-');
+    const surface = property === 'box-shell' || property.startsWith('box-shell-');
     const visibility = property === 'observable' || property.startsWith('observable-');
     if (!surface && !visibility) continue;
-    const shorthand = property === 'box-surface' || property === 'observable';
-    const face = property.slice(surface ? 12 : 11) as SurfaceFace;
+    const shorthand = property === 'box-shell' || property === 'observable';
+    const face = property.slice(surface ? 10 : 11) as SurfaceFace;
     if (!shorthand && !SURFACE_FACES.includes(face)) continue;
     try {
       const items = values(value);
@@ -78,11 +78,11 @@ export function parseBoxSurfaceDeclaration(
   }
   if (!active && declarations.some(d => SURFACE_PROPERTIES.includes(d.property))) {
     invalid = true;
-    diagnostics.push('Face-specific properties require a box-surface enclosure.');
+    diagnostics.push('Face-specific properties require a box-shell enclosure.');
   }
   if (!active && declarations.some(d => d.property === 'observable' && d.value.includes(','))) {
     invalid = true;
-    diagnostics.push('Multi-face observable values require a box-surface enclosure.');
+    diagnostics.push('Multi-face observable values require a box-shell enclosure.');
   }
   if (invalid) return { faces, observable, invalid: true };
   return active ? { faces, observable } : mentioned ? null : undefined;

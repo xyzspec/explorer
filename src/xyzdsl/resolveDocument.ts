@@ -441,7 +441,7 @@ export function resolveXyzDslDocument(objects: SpatialObject[]): {
     const surface = parseBoxSurfaceDeclaration(object.surfaceDeclarations ?? [], messages, target ? surfaceFor(target) : object.boxSurface);
     if (object.declarationOnly && surface) {
       surface.invalid = true;
-      messages.push('box-surface requires a concrete box declaration.');
+      messages.push('box-shell requires a concrete box declaration.');
     }
     diagnostics.push(...messages.map(message => ({ line: object.lineNumber, source: object.source, message })));
     surfaces.set(object, surface);

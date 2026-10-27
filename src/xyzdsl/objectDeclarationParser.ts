@@ -21,7 +21,7 @@ const SUPPORTED_OBJECT_PROPERTIES = new Set([
   ...SUPPORTED_MATERIAL_KEYS,
   ...SURFACE_PROPERTIES,
   ...GRID_PROPERTIES,
-  'box-surface',
+  'box-shell',
   'surface',
   'view-point',
   'light-source',
@@ -106,7 +106,7 @@ export function parseObjectProperties(source: string): XyzDslObjectPropertiesSpe
 
   return {
     gridDeclarations: declarations.filter(d => GRID_PROPERTIES.includes(d.property)),
-    surfaceDeclarations: declarations.filter(d => d.property === 'box-surface' || d.property === 'observable' || SURFACE_PROPERTIES.includes(d.property)),
+    surfaceDeclarations: declarations.filter(d => d.property === 'box-shell' || d.property === 'observable' || SURFACE_PROPERTIES.includes(d.property)),
     surface: parseSurfaceAttachment(declarations, diagnostics),
     repeat,
     light: enabled ? { intensity, distance, color: lightMaterial.color ?? '#ffffff' } : undefined,

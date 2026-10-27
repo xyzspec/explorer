@@ -3,7 +3,7 @@ import { createSpatialDocument } from '../model/createSpatialDocument';
 import type { SpatialNode } from '../model/SpatialNode';
 import { findNodeByLineNumber, selectionTargetForNodeId } from '../selection';
 
-const cabinet = '"Cabinet/+0+12d/+0+18d/+0+4d":"box-surface: 2c white; box-grid: 3 4 2; box-partition: 1c gray; observable: true"';
+const cabinet = '"Cabinet/+0+12d/+0+18d/+0+4d":"box-shell: 2c white; box-grid: 3 4 2; box-partition: 1c gray; observable: true"';
 const flatten = (nodes: SpatialNode[]): SpatialNode[] => nodes.flatMap(n => [n, ...flatten(n.children ?? [])]);
 const scene = (extra = '', base = cabinet) => createSpatialDocument(base + '\n' + extra);
 
@@ -44,7 +44,7 @@ describe('box grid layout', () => {
   expect(items.at(-1)!.bounds.maxY).toBeCloseTo(1.3375);
  });
  it('attaches to both sides of a shared partition and skips missing outer faces', () => {
-  const doc = scene('"Cabinet/Lining/++/++/+0+1m":"cell: all; surface: walls; model: tile.glb"', cabinet.replace('observable: true','box-surface-front: none; observable: true'));
+  const doc = scene('"Cabinet/Lining/++/++/+0+1m":"cell: all; surface: walls; model: tile.glb"', cabinet.replace('observable: true','box-shell-front: none; observable: true'));
   expect(doc.diagnostics).toEqual([]);
   const tiles = doc.renderNodes.filter(n => n.model);
   expect(findNodeByLineNumber(doc.nodes,2)?.model).toBeDefined();
@@ -76,7 +76,7 @@ describe('box grid layout', () => {
   expect(doc.renderNodes.find(n=>n.geometry.partitionGrid)!.geometry.partitionGrid!.counts).toEqual([4,1,3]);
  });
  it.each(['box-grid: 0 2 2','box-grid: 2 2','box-grid: 1.5 2 2','box-grid: 9007199254740992 1 1','box-grid: 3 4 2; box-partition: 1 white','box-grid: 3 4 2; box-partition: -1c red'])('rejects invalid layouts: %s', props => {
-  const doc = scene('', `"Cabinet/+0+12d/+0+18d/+0+4d":"box-surface: 2c white; ${props}"`);
+  const doc = scene('', `"Cabinet/+0+12d/+0+18d/+0+4d":"box-shell: 2c white; ${props}"`);
   expect(doc.diagnostics.length).toBeGreaterThan(0); expect(doc.renderNodes).toHaveLength(0);
  });
  it.each(['cell: 4 1 1','cell: 0 1 1','cell: 1 1','cell: -1 1 1'])('omits invalid cell children: %s', props => {
@@ -91,14 +91,14 @@ describe('box grid layout', () => {
   expect(doc.diagnostics.some(d=>d.message.includes('budget'))).toBe(true); expect(doc.nodes).toHaveLength(0);
  });
  it('bounds repeated grid expansion and recovers the budget for independent roots', () => {
-  const source = '"Parent/+0+12/+0+2/+0+1":""\n"Parent/Grid/+0+1/+0+1/+0+1":"box-surface: 1c white; box-grid: 6 6 6; box-partition: 1m gray; repeat: x"\n"Valid/+20+1/+0+1/+0+1":"box-surface: 1c white; box-grid: 2 1 1; box-partition: 1c red"';
+  const source = '"Parent/+0+12/+0+2/+0+1":""\n"Parent/Grid/+0+1/+0+1/+0+1":"box-shell: 1c white; box-grid: 6 6 6; box-partition: 1m gray; repeat: x"\n"Valid/+20+1/+0+1/+0+1":"box-shell: 1c white; box-grid: 2 1 1; box-partition: 1c red"';
   const doc=createSpatialDocument(source);
   expect(doc.diagnostics.some(d=>d.message.includes('budget'))).toBe(true);
   expect(doc.nodes).toHaveLength(1); expect(doc.nodes[0].namespacePath).toBe('Valid/');
   expect(doc.renderNodes).toHaveLength(7);
  });
  it('rotates cell frames once and supports nested grids without inheriting the outer grid', () => {
-  const doc=scene('"Cabinet/Inner/++/++/++":"cell: 2 3 1; box-surface: 1m red; box-grid: 2 1 1; box-partition: 1m blue"\n"Cabinet/Inner/Item/++/++/++":"cell: all; model: item.glb"',cabinet);
+  const doc=scene('"Cabinet/Inner/++/++/++":"cell: 2 3 1; box-shell: 1m red; box-grid: 2 1 1; box-partition: 1m blue"\n"Cabinet/Inner/Item/++/++/++":"cell: all; model: item.glb"',cabinet);
   expect(doc.diagnostics).toEqual([]);
   expect(doc.renderNodes.filter(n=>n.geometry.partitionGrid)).toHaveLength(2);
   expect(doc.renderNodes.filter(n=>n.model)).toHaveLength(2);

@@ -14,11 +14,12 @@ export function parsePropertyDeclarations(source: string): { declarations: XyzDs
     .filter(Boolean)
     .forEach((declaration) => {
       const [rawProperty, ...rawValueParts] = declaration.split(':');
-      const property = rawProperty?.trim();
+      // Canonicalize legacy shell names before validation, preserving declaration order.
+      const property = rawProperty?.trim().replace(/^box-surface(?=-|$)/, 'box-shell');
       const value = rawValueParts.join(':').trim();
 
       if (!property || !value) {
-        if (property === 'surface' || property === 'box-surface' || property.startsWith('box-surface-') || property.startsWith('observable-')) declarations.push({ property, value, source: declaration });
+        if (property === 'surface' || property === 'box-shell' || property.startsWith('box-shell-') || property.startsWith('observable-')) declarations.push({ property, value, source: declaration });
         diagnostics.push(`Ignoring malformed declaration "${declaration}".`);
         return;
       }

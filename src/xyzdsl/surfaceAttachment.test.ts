@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSpatialDocument } from '../model/createSpatialDocument';
-const room = '"Room/+1+366c/+1+330c/+1+391c":"box-surface: 1d white; observable: true"';
+const room = '"Room/+1+366c/+1+330c/+1+391c":"box-shell: 1d white; observable: true"';
 const tile = '"Room/Tiles/+0+85c/+0+86c/+0+2c":"surface: walls; model: tile.glb; reset-axes: 90,0,0; repeat: x; repeat-gap: 1m; repeat-edge: clip"';
 describe('surface attachments', () => {
  it('creates four correctly oriented clipped strips with shared wall visibility', () => {
@@ -24,7 +24,7 @@ describe('surface attachments', () => {
   const doc = createSpatialDocument(`${room}\n"Room/T/+0+/+0+/+0+1c":"surface: all"`);
   expect(doc.diagnostics).toEqual([]);
   expect(doc.renderNodes).toHaveLength(12);
-  const missing = createSpatialDocument(`${room.replace('observable: true','box-surface-top: none')}\n"Room/T/+0+1/+0+1/+0+1c":"surface: top"`);
+  const missing = createSpatialDocument(`${room.replace('observable: true','box-shell-top: none')}\n"Room/T/+0+1/+0+1/+0+1c":"surface: top"`);
   expect(missing.diagnostics.some(d => d.message.includes('missing top'))).toBe(true);
   expect(missing.renderNodes).toHaveLength(5);
  });

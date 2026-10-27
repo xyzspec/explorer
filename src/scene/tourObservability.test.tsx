@@ -8,7 +8,7 @@ const state = vi.hoisted(() => ({ frame: undefined as undefined | ((value: any) 
 vi.mock('@react-three/fiber', () => ({ useFrame: (frame: any) => { state.frame = frame; } }));
 afterEach(cleanup);
 it.each(['panel', 'csg', 'attachment'])('restores %s visibility on entering tours and cutaways on leaving', kind => {
- const doc = createSpatialDocument('"Sal/+0+366c/+0+330c/+0+391c":"box-surface: 1d white; observable: true"\n"Sal/Tile/+0+1/+0+1/+0+2c":"surface: back"\n"Cut/+1+1/+1+1/+37d+4d":"operation: subtraction"');
+ const doc = createSpatialDocument('"Sal/+0+366c/+0+330c/+0+391c":"box-shell: 1d white; observable: true"\n"Sal/Tile/+0+1/+0+1/+0+2c":"surface: back"\n"Cut/+1+1/+1+1/+37d+4d":"operation: subtraction"');
  const candidates = [...doc.renderNodes, ...doc.csgExpressions.map(e => e.base)];
  const node = kind === 'attachment' ? candidates.find(n=>n.metadata?.attachedPanelId)!
   : kind === 'csg' ? doc.csgExpressions.find(e=>e.base.metadata?.surfaceFace === 'back')!.base

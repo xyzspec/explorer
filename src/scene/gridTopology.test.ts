@@ -5,7 +5,7 @@ import { matrixFromTransform } from '../model/transform';
 import { createSpatialDocument } from '../model/createSpatialDocument';
 import { brushFor, evaluateCsgExpressionGeometry } from './csgGeometry';
 
-const rooms = '"Rooms/+0+366c/+0+330c/+0+622c":"box-surface: 1d #fffdd0; box-partition: 1d gray; box-grid-columns: 140c 196c; box-grid-rows: 1; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"';
+const rooms = '"Rooms/+0+366c/+0+330c/+0+622c":"box-shell: 1d #fffdd0; box-partition: 1d gray; box-grid-columns: 140c 196c; box-grid-rows: 1; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"';
 
 // Test world geometry independently of the topology implementation's occupancy map.
 function meshesFor(source: string) {
@@ -97,7 +97,7 @@ describe('independent unequal grid topology regression', () => {
   scene.dispose();
  });
  it('supports a three-dimensional central void surrounded by merged cuboids', () => {
-  const source = '"Grid/+0+34d/+0+34d/+0+34d":"box-surface: 1d white; box-partition: 1d gray; box-grid: 3 3 3; box-grid-areas: front front front | front front front | front front front / bottom bottom bottom | left . right | top top top / back back back | back back back | back back back"';
+  const source = '"Grid/+0+34d/+0+34d/+0+34d":"box-shell: 1d white; box-partition: 1d gray; box-grid: 3 3 3; box-grid-areas: front front front | front front front | front front front / bottom bottom bottom | left . right | top top top / back back back | back back back | back back back"';
   const scene = meshesFor(source);
   for (const axis of [0,1,2]) for (const sign of [-1,1]) {
    const direction = [0,0,0]; direction[axis] = sign;

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createSpatialDocument } from '../model/createSpatialDocument';
 import bedroomExample from '../../docs/examples/bedroom-grid.xyzdsl?raw';
 
-const room = '"Rooms/+0+366c/+0+330c/+0+622c":"box-surface: 1d #fffdd0; box-partition: 1d #fffdd0; box-grid-columns: 140c 196c; box-grid-rows: 1; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"';
+const room = '"Rooms/+0+366c/+0+330c/+0+622c":"box-shell: 1d #fffdd0; box-partition: 1d #fffdd0; box-grid-columns: 140c 196c; box-grid-rows: 1; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"';
 const item = (name: string, cell: string) => `"Rooms/${name}/++/++/++":"cell: ${cell}; model: item.glb;"`;
 
 describe('unequal tracks and named cell layout', () => {
@@ -39,7 +39,7 @@ describe('unequal tracks and named cell layout', () => {
   });
 
   it('divides the remainder proportionally after fixed tracks and divider thickness', () => {
-    const source = '"Rooms/+0+14d/+0+10d/+0+10d":"box-surface: 1d white; box-partition: 1d gray; box-grid-columns: 30c 1fr 2fr;"';
+    const source = '"Rooms/+0+14d/+0+10d/+0+10d":"box-shell: 1d white; box-partition: 1d gray; box-grid-columns: 30c 1fr 2fr;"';
     const doc = createSpatialDocument([source, item('One', '1 1 1'), item('Two', '2 1 1'), item('Three', '3 1 1')].join('\n'));
     expect(doc.diagnostics).toEqual([]);
     const models = doc.renderNodes.filter(n => n.model);
@@ -49,7 +49,7 @@ describe('unequal tracks and named cell layout', () => {
   });
 
   it('supports vertical merged areas and fractional rows', () => {
-    const source = '"Rooms/+0+10d/+0+20d/+0+10d":"box-surface: 1d white; box-partition: 1d gray; box-grid-columns: 2; box-grid-rows: 1fr 2fr; box-grid-areas: tall low | tall high;"';
+    const source = '"Rooms/+0+10d/+0+20d/+0+10d":"box-shell: 1d white; box-partition: 1d gray; box-grid-columns: 2; box-grid-rows: 1fr 2fr; box-grid-areas: tall low | tall high;"';
     const doc = createSpatialDocument([source, item('Tall', 'tall'), item('Low', 'low'), item('High', 'high')].join('\n'));
     expect(doc.diagnostics).toEqual([]);
     const models = doc.renderNodes.filter(n => n.model);
@@ -84,7 +84,7 @@ describe('unequal tracks and named cell layout', () => {
 
   it('resolves an unequal child grid inside a merged area', () => {
     const doc = createSpatialDocument([room,
-      '"Rooms/Shelf/++/+0+1d/+0+1d":"cell: bedroom; box-surface: 1m red; box-grid-columns: 1fr 2fr; box-partition: 1m blue;"',
+      '"Rooms/Shelf/++/+0+1d/+0+1d":"cell: bedroom; box-shell: 1m red; box-grid-columns: 1fr 2fr; box-partition: 1m blue;"',
       '"Rooms/Shelf/Item/++/++/++":"cell: all; model: small.glb;"',
     ].join('\n'));
     expect(doc.diagnostics).toEqual([]);
@@ -101,7 +101,7 @@ describe('unequal tracks and named cell layout', () => {
     const areas = Array(9).fill(slice).join(' / ');
     const doc = createSpatialDocument([
       '"Parent/+0+2/+0+1/+0+1":""',
-      `"Parent/Grid/+0+1/+0+1/+0+1":"box-surface: 1m white; box-partition: 1m gray; box-grid: 9 9 9; box-grid-areas: ${areas}; repeat: x;"`,
+      `"Parent/Grid/+0+1/+0+1/+0+1":"box-shell: 1m white; box-partition: 1m gray; box-grid: 9 9 9; box-grid-areas: ${areas}; repeat: x;"`,
       room,
     ].join('\n'));
     expect(doc.diagnostics.some(d => d.message.includes('budget'))).toBe(true);
@@ -133,7 +133,7 @@ describe('unequal tracks and named cell layout', () => {
     'box-grid-columns: 2; box-grid-areas: . .',
     'box-grid-columns: 2; box-grid-areas: all a',
   ])('rejects invalid grid atomically: %s', props => {
-    const doc = createSpatialDocument(`"Rooms/+0+10d/+0+10d/+0+10d":"box-surface: 1d white; box-partition: 1d gray; ${props};"\n${item('Child', 'all')}`);
+    const doc = createSpatialDocument(`"Rooms/+0+10d/+0+10d/+0+10d":"box-shell: 1d white; box-partition: 1d gray; ${props};"\n${item('Child', 'all')}`);
     expect(doc.diagnostics.length).toBeGreaterThan(0);
     expect(doc.renderNodes).toHaveLength(0);
   });

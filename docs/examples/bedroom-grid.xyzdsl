@@ -1,4 +1,4 @@
-"Rooms/+0+366c/+0+330c/+0+622c":"box-surface: 1d #fffdd0; box-partition: 1d #fffdd0; box-grid-columns: 140c 196c; box-grid-rows: 1; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"
+"Rooms/+0+366c/+0+330c/+0+622c":"box-shell: 1d #fffdd0; box-partition: 1d #fffdd0; box-grid-columns: 140c 196c; box-grid-rows: 1; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"
 "Rooms/CeilingLamp/+1628m+34c/++7c/+193c+301m":"cell: bedroom; model: salouis/ceiling_lamp.glb"
 "Rooms/Lighting/+1628m+34c/+2975m+7c/+193c+301m":"cell: bedroom; light-source: true; light-color: #ffffff; light-intensity: 10; light-distance: 0"
 

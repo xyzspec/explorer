@@ -201,23 +201,27 @@ memory. ZIP64, encryption, and compressed ZIP entries are not supported by v1.
 Local bundles use the same source editing, error display, resource cleanup, and
 remote-store switching as scene folders.
 
-## Rooms with box-surface
+## Rooms with box-shell
+
+`box-shell` replaces the name `box-surface`; the old shorthand and face
+properties remain supported aliases. Gallery documents and the default local
+draft use `box-shell`, and saved gallery sources migrate on load.
 
 Create six inward-extending boundary panels with one declaration:
 
 ```xyzdsl
-"Room/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white;"
+"Room/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white;"
 ```
 
 This gives the room 10 cm thick white walls, a ceiling, and a floor, within its
 3.66 × 3.30 × 3.91 metre outer box. The clear interior is
 3.46 × 3.10 × 3.71 metres. Children start at the interior wall surfaces and do not
-inherit the shell rule. References retain it; `box-surface: none` cancels it.
+inherit the shell rule. References retain it; `box-shell: none` cancels it.
 Thickness uses existing path units and must be less than half every local box
 dimension. Generated panels support transforms, materials, repetition, collision,
 and shadows. Selecting a panel selects the enclosure's source declaration.
 Primitive CSG tools can cut overlapping panels; model/content/light combinations
-on the enclosure declaration remain unsupported. See the [box-surface specification](SPECIFICATION.md#box-surfaces) for
+on the enclosure declaration remain unsupported. See the [box-shell specification](SPECIFICATION.md#box-shells) for
 scaling, validation, and generation limits.
 
 ### Individual panels and cutaway views
@@ -225,14 +229,14 @@ scaling, validation, and generation limits.
 Surface and observability shorthands accept 1, 2, 3, or 6 comma-separated values:
 all faces; top/bottom and walls; top/bottom, right/left, and front/back;
 or top, right, bottom, left, front, back respectively. Override a single face
-with `box-surface-<face>` or `observable-<face>`, in declaration order.
+with `box-shell-<face>` or `observable-<face>`, in declaration order.
 
 ```xyzdsl
-"Sal/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white; box-surface-bottom: 2d gray; observable-top: true;"
+"Sal/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white; box-shell-bottom: 2d gray; observable-top: true;"
 ```
 
 This room has a thicker gray floor and a ceiling you can see through from above.
-`box-surface-top: none` removes the ceiling instead. `observable: true` makes
+`box-shell-top: none` removes the ceiling instead. `observable: true` makes
 all panels see-through from outside; add `observable-bottom: false` to keep the
 floor visible. These enclosure settings do not affect ordinary children.
 Explicit `observable: +y` still applies +Y separately to every panel; use the
@@ -244,7 +248,7 @@ existing visibility behavior. See [per-face rules](SPECIFICATION.md#per-face-sur
 Child offsets start at the inside corner (left wall, floor, front wall):
 
 ```xyzdsl
-"Sal/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white;"
+"Sal/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white;"
 "Sal/Bed/+0+155c/+0+8d/+0+205c":"model: salouis/wooden_bed.glb"
 ```
 
@@ -267,7 +271,7 @@ for a window example and target-selection behavior.
 ## One tiling declaration for all walls
 
 ```xyzdsl
-"Sal/+10d+366c/+10d+330c/+10d+391c":"box-surface: 1d white; observable: true;"
+"Sal/+10d+366c/+10d+330c/+10d+391c":"box-shell: 1d white; observable: true;"
 "Sal/Tiling/+0+85c/+0+86c/+0+2c":"surface: walls; model: salouis/tile_triad.glb; reset-axes: 90,0,0; repeat: x; repeat-gap: 1m; repeat-edge: clip;"
 ```
 
@@ -291,7 +295,7 @@ cutaways. Removed panels and CSG openings remain open in both modes.
 ### Grid partitions inside an enclosure
 
 ```xyzdsl
-"Cabinet/+0+12d/+0+18d/+0+4d":"box-surface: 2c white; box-surface-front: none; box-grid: 3 4 2; box-partition: 1c gray;"
+"Cabinet/+0+12d/+0+18d/+0+4d":"box-shell: 2c white; box-shell-front: none; box-grid: 3 4 2; box-partition: 1c gray;"
 "Cabinet/Item/+0+20c/+0+25c/+0+15c":"cell: 2 3 1; model: item.glb;"
 "Cabinet/Lining/+0+10c/+0+10c/+0+1m":"cell: all; surface: walls; model: tile.glb; repeat: x,y; repeat-edge: clip;"
 ```
@@ -299,7 +303,7 @@ cutaways. Removed panels and CSG openings remain open in both modes.
 `box-grid` specifies **columns, rows, slices** along local X, Y, Z. Counts are
 positive integers, measured left-to-right, bottom-to-top, front-to-back.
 `box-partition` supplies the positive thickness and color of shared internal
-dividers; outer faces retain their `box-surface` settings. The count longhands
+dividers; outer faces retain their `box-shell` settings. The count longhands
 are `box-grid-columns`, `box-grid-rows`, and `box-grid-slices`.
 
 `cell: 2 3 1` uses one-based indices and places the child's origin at that cell's
@@ -321,7 +325,7 @@ dot cells. Columns are separated by spaces, rows by `|`, and slices by `/`.
 Each named area must be a rectangular cuboid.
 
 ```xyzdsl
-"Rooms/+0+366c/+0+330c/+0+622c":"box-surface: 1d #fffdd0; box-partition: 1d #fffdd0; box-grid-columns: 140c 196c; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"
+"Rooms/+0+366c/+0+330c/+0+622c":"box-shell: 1d #fffdd0; box-partition: 1d #fffdd0; box-grid-columns: 140c 196c; box-grid-slices: 371c 221c; box-grid-areas: bedroom bedroom / . annex; observable: true;"
 "Rooms/Bed/+1356m+155c/+0+8d/+1d+205c":"cell: bedroom; model: salouis/wooden_bed.glb;"
 "Rooms/Tiling/+0+85c/+0+86c/+0+2c":"cell: bedroom; surface: walls; model: salouis/tile_triad.glb; reset-axes: 90,0,0; repeat: x; repeat-gap: 1m; repeat-edge: clip;"
 ```

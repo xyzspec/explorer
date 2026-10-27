@@ -108,7 +108,7 @@ export function resolveLayout(
     if (object.surface && !attached) {
       if (object.surface.invalid) return;
       if (!parent?.boxSurface && !parent?.cellBoundaryPanels) {
-        if (![...templates].some(path => object.namespacePath.startsWith(path))) report(object, 'surface requires a nearest concrete box-surface parent.');
+        if (![...templates].some(path => object.namespacePath.startsWith(path))) report(object, 'surface requires a nearest concrete box-shell parent.');
         return;
       }
       if (object.content.kind || object.light || object.viewPoint) { report(object, 'surface attachments support primitives and models, not content, lights or viewpoints.'); return; }
@@ -204,16 +204,16 @@ export function resolveLayout(
     const surface = object.boxSurface;
     const localSizes = SIZES.map((size, index) => box[size] / (anchorScale?.[index] ?? 1));
     if (surface && (object.geometry.kind !== 'box' || object.geometry.operation || object.geometry['box-radius'] || object.geometry.puff || object.model.source || object.content.kind || object.light || object.viewPoint)) {
-      report(object, 'box-surface supports plain boxes only; model, content, light, view-point, CSG and deformed geometry combinations are unsupported.');
+      report(object, 'box-shell supports plain boxes only; model, content, light, view-point, CSG and deformed geometry combinations are unsupported.');
       return;
     }
     if (surface && localSizes.some((size, index) => !Number.isFinite(size) || (surface.faces[(['left', 'bottom', 'front'] as const)[index]]?.thickness ?? 0) + (surface.faces[(['right', 'top', 'back'] as const)[index]]?.thickness ?? 0) >= size)) {
-      report(object, 'box-surface requires opposing panel thickness sums to be smaller than every resolved local box dimension.');
+      report(object, 'box-shell requires opposing panel thickness sums to be smaller than every resolved local box dimension.');
       return;
     }
     let layout: ReturnType<typeof gridLayout>;
     if (object.boxGrid) {
-      if (!surface) { report(object, 'box-grid requires a box-surface enclosure.'); return; }
+      if (!surface) { report(object, 'box-grid requires a box-shell enclosure.'); return; }
       const gridInset = nearFaces.map(f => surface.faces[f]?.thickness ?? 0) as Triple;
       const gridSize = localSizes.map((size, i) => size - gridInset[i] - (surface.faces[farFaces[i]]?.thickness ?? 0)) as Triple;
       if (!Number.isSafeInteger(gridCost(object.boxGrid.counts)) || (object.boxGrid.areas ? object.boxGrid.counts.reduce((n, c) => n * (2 * c + 1), 1) : gridCost(object.boxGrid.counts)) > MAX_LAYOUT_INSTANCES) throw budgetExceeded;
