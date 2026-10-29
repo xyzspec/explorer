@@ -622,56 +622,20 @@ button {
   overflow-wrap: anywhere;
 }
 
-.xyzdsl-csg-summary {
-  display: grid;
-  gap: 0.45rem;
-  margin-bottom: 0.7rem;
-  border: 1px solid rgb(148 163 184 / 16%);
-  border-radius: 0.75rem;
-  padding: 0.65rem;
-  background: rgb(2 6 23 / 28%);
-}
-
-.xyzdsl-csg-summary h3 {
-  margin: 0;
-  color: #dbeafe;
-  font-size: 0.8rem;
-}
-
-.xyzdsl-csg-summary ul {
-  display: grid;
-  gap: 0.45rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.xyzdsl-csg-summary li {
-  display: grid;
-  gap: 0.2rem;
-  border-bottom: 1px solid rgb(148 163 184 / 14%);
-  padding-bottom: 0.45rem;
+.xyzdsl-tree-composition {
+  padding: 0.5rem;
+  border-left: 2px solid rgb(14 165 233 / 35%);
   color: #cbd5e1;
   font-size: 0.8rem;
 }
 
-.xyzdsl-csg-summary li:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
+.xyzdsl-tree-composition ol {
+  margin: 0.35rem 0 0;
+  padding-left: 1.5rem;
 }
 
-.xyzdsl-csg-summary strong {
-  color: #f8fafc;
-}
-
-.xyzdsl-csg-summary em {
-  width: max-content;
-  border-radius: 999px;
-  padding: 0.12rem 0.4rem;
-  background: rgb(37 99 235 / 26%);
-  color: #bfdbfe;
-  font-size: 0.68rem;
-  font-style: normal;
+.xyzdsl-tree-composition button[aria-current="true"] {
+  background: rgb(14 165 233 / 18%);
 }
 
 .transaction-controls {

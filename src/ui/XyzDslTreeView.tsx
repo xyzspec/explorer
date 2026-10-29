@@ -1,6 +1,7 @@
 import { t, useLocale } from '../i18n';
 import { useMemo, useState } from 'react';
 import type { SpatialDocument } from '../model/SpatialDocument';
+import type { CsgExpression } from '../model/csg';
 import type { SpatialNode } from '../model/SpatialNode';
 
 interface XyzDslTreeViewProps {
@@ -50,19 +51,23 @@ function geometryLabel(node: SpatialNode): string {
 function TreeItem({
   node,
   collapsedIds,
+  expressionsByBase,
   selectedNodeId,
   onSelectNode,
   onToggle,
 }: {
   node: SpatialNode;
   collapsedIds: Set<string>;
+  expressionsByBase: Map<string, CsgExpression>;
   selectedNodeId?: string;
   onSelectNode?: (id: string) => void;
   onToggle: (id: string) => void;
 }) {
   useLocale();
   const children = node.children ?? [];
-  const hasChildren = children.length > 0;
+  const expression = expressionsByBase.get(node.id);
+  const operations = expression?.operations ?? node.modelCsgOperations ?? [];
+  const hasChildren = children.length > 0 || operations.length > 0;
   const isCollapsed = collapsedIds.has(node.id);
   const isSelected = selectedNodeId === node.id;
   const lineNumber = metadataValue<number>(node, 'lineNumber');
@@ -117,10 +122,30 @@ function TreeItem({
 
       {hasChildren && !isCollapsed ? (
         <ul className="xyzdsl-tree-children">
+          {operations.length > 0 ? (
+            <li className="xyzdsl-tree-composition">
+              <strong>{t("Boolean composition")} · {operations.length} {t(operations.length === 1 ? 'boolean operation' : 'boolean operations')}</strong>
+              <ol>
+                {operations.map((operation, index) => (
+                  <li key={`${operation.tool.id}-${index}`}>
+                    <button
+                      type="button"
+                      className="xyzdsl-tree-node-summary"
+                      aria-current={selectedNodeId === operation.tool.id ? 'true' : undefined}
+                      onClick={() => onSelectNode?.(operation.tool.id)}
+                    >
+                      <span>{t(operation.op)} · {displayName(operation.tool)} · {t(operation.tool.geometry.kind)}</span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </li>
+          ) : null}
           {children.map((child) => (
             <TreeItem
               key={child.id}
               node={child}
+              expressionsByBase={expressionsByBase}
               collapsedIds={collapsedIds}
               selectedNodeId={selectedNodeId}
               onSelectNode={onSelectNode}
@@ -137,7 +162,12 @@ export function XyzDslTreeView({ document, selectedNodeId, onSelectNode }: XyzDs
   useLocale();
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
   const nodeIds = useMemo(() => sortedTreeIds(document.nodes), [document.nodes]);
-  const hasCollapsibleNodes = useMemo(() => hasNestedNodes(document.nodes), [document.nodes]);
+  const expressionsByBase = useMemo(
+    () => new Map(document.csgExpressions.map((expression) => [expression.base.id, expression])),
+    [document.csgExpressions],
+  );
+  const hasCollapsibleNodes = hasNestedNodes(document.nodes) || document.csgExpressions.length > 0
+    || document.renderNodes.some((node) => (node.modelCsgOperations?.length ?? 0) > 0);
 
   function toggleNode(id: string) {
     setCollapsedIds((current) => {
@@ -176,38 +206,19 @@ export function XyzDslTreeView({ document, selectedNodeId, onSelectNode }: XyzDs
       {document.nodes.length === 0 ? (
         <p>{t("No valid definitions yet.")}</p>
       ) : (
-        <>
-          {document.csgExpressions.length > 0 ? (
-            <div className="xyzdsl-csg-summary" aria-label={t("Boolean composition summary")}>
-              <h3>{t("Boolean composition expressions")}</h3>
-              <ul>
-                {document.csgExpressions.map((expression) => (
-                  <li key={expression.id}>
-                    <strong>{expression.id}</strong>
-                    <span>
-                      {expression.base.geometry.kind} {t("with")} {expression.operations.length} {t(expression.operations.length === 1 ? 'boolean operation' : 'boolean operations')}:{' '}
-                      {expression.operations.map((operation) => `${operation.op} ${operation.tool.geometry.kind}`).join(', ')}
-                    </span>
-                    <em>{expression.base.id}</em>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          <ul className="xyzdsl-tree-root">
-            {document.nodes.map((node) => (
-              <TreeItem
-                key={node.id}
-                node={node}
-                collapsedIds={collapsedIds}
-                selectedNodeId={selectedNodeId}
-                onSelectNode={onSelectNode}
-                onToggle={toggleNode}
-              />
-            ))}
-          </ul>
-        </>
+        <ul className="xyzdsl-tree-root">
+          {document.nodes.map((node) => (
+            <TreeItem
+              key={node.id}
+              node={node}
+              expressionsByBase={expressionsByBase}
+              collapsedIds={collapsedIds}
+              selectedNodeId={selectedNodeId}
+              onSelectNode={onSelectNode}
+              onToggle={toggleNode}
+            />
+          ))}
+        </ul>
       )}
     </section>
   );

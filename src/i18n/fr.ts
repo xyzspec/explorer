@@ -163,6 +163,7 @@ export const fr: Record<string, string> = {
   "Expand all": "Tout développer",
   "Collapse all": "Tout réduire",
   "No valid definitions yet.": "Aucune définition valide pour le moment.",
+  "Boolean composition": "Composition booléenne",
   "Boolean composition summary": "Résumé de la composition booléenne",
   "Boolean composition expressions": "Expressions de composition booléenne",
   "with": "avec",
