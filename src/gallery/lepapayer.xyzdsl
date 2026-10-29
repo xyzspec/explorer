@@ -76,10 +76,12 @@
 "Pap/BathroomDoor/+9487m+2d/+8c+17d/+2c+74c":"model: lepapayer/bathroom_door.glb; reset-axes: 0, 270, 0"
 "Pap/BedroomChair/+8859m+5d/+0+6d/+237c+4d":"model: lepapayer/dressing_chair.glb; reset-axes: 0, 270, 0"
 
-"Pap/WaterHeater/+9625m+3d/+18d+6d/+864m+3d" : "model: lepapayer/water_heater.glb; reset-axes: 0, 90, 0"
+"Pap/WaterHeater/+9625m+3d/+164c+6d/+864m+3d" : "model: lepapayer/water_heater.glb; reset-axes: 0, 90, 0"
 "Pap/TowelRack/+9605m+22c/+9d+2d/+854m+5d" : "model: lepapayer/towel_rack.glb;"
+"Pap/ToiletFlush/+9882m+195m/+88c+126m/+1892m+24m" : "model: lepapayer/toilet_flush.glb; reset-axes: 0, 180, 0"
 "Pap/ToiletBowl/+9725m+51c/+0+91c/+1284m+58c" : "model: lepapayer/toilet_bowl.glb; reset-axes: 0, 180, 0"
 "Pap/ShowerHead/+104d+51c/+18d+31c/+984m+58c" : "model: lepapayer/shower_head.glb; reset-axes: 0, 270, 0"
 "Pap/ShowerControl/+108d+101m/+9d+21c/+1384m+18c" : "model: lepapayer/shower_control.glb; reset-axes: 0, 270, 0"
 "Pap/HandBasin/+105d+401m/+7d+41c/+84m+68c" : "model: lepapayer/hand_basin.glb; reset-axes: 0, 270, 0"
+"Pap/SinkShelf/+1078c+121m/+114c+12c/+174m+5d" : "model: lepapayer/sink_shelf.glb;reset-axes: 0, 270, 0"
 "Pap/BathroomWindow/+9752m+103c/+19d+55c/+185c+2d" : "model: lepapayer/bathroom_window.glb; reset-axes: 0,180, 0"
