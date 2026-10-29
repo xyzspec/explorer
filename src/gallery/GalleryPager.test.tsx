@@ -9,15 +9,15 @@ import { setLocale } from '../i18n';
 const points = viewPoints(createSpatialDocument(INITIAL_GALLERY[0].source));
 beforeEach(() => setLocale('en'));
 afterEach(() => { cleanup(); sessionStorage.clear(); vi.useRealTimers(); });
-it('names viewpoints, selects dots, stops at boundaries, and toggles Look around', () => {
+it('names viewpoints, selects dots, wraps at boundaries, and toggles Look around', () => {
   const select = vi.fn(), looking = vi.fn();
   const view = render(<GalleryPager points={points} index={0} looking={false} onLookingChange={looking} onSelect={select} canHint ready interacted={false} />);
   expect(view.getByText('Entrance')).toBeTruthy();
-  expect((view.getByLabelText('Previous view point') as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.click(view.getByLabelText('Previous view point')); expect(select).toHaveBeenLastCalledWith(6);
   fireEvent.click(view.getByLabelText('Go to Kitchen, 3 of 7')); expect(select).toHaveBeenCalledWith(2);
   fireEvent.click(view.getByText('Tap to look around')); expect(looking).toHaveBeenCalledWith(true);
   view.rerender(<GalleryPager points={points} index={6} looking onLookingChange={looking} onSelect={select} canHint ready interacted />);
-  expect((view.getByLabelText('Next view point') as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.click(view.getByLabelText('Next view point')); expect(select).toHaveBeenLastCalledWith(0);
   fireEvent.click(view.getByText('Done')); expect(looking).toHaveBeenCalledWith(false);
 });
 it('shows the feed hint only once after readiness and hides it on interaction', () => {

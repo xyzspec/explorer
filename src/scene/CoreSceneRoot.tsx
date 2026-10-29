@@ -116,7 +116,7 @@ export function SceneRoot({ initialViewPoint = 0, onViewPointChange, galleryCanP
   const enterLooking = useCallback(() => { dismissHint(); setLooking(true); }, [dismissHint]);
   const selectPoint = useCallback((index: number) => { dismissHint(); tour.select(index); }, [dismissHint, tour.select]);
   const gallerySwipe = useGallerySwipe(onTraverseGallery, gallery && points.length > 1 ? tour.traverse : undefined, gallery && !looking,
-    (axis, delta) => axis === 'y' ? (delta > 0 ? galleryCanNext : galleryCanPrevious) : pointIndex !== undefined && pointIndex + delta >= 0 && pointIndex + delta < points.length, dismissHint, enterLooking);
+    (axis, delta) => axis === 'y' ? (delta > 0 ? galleryCanNext : galleryCanPrevious) : pointIndex !== undefined && points.length > 1, dismissHint, enterLooking);
   const cameraMode = point ? 'pov' : 'orbit';
   // A thin editor selection must not carry its tiny near plane into a room tour:
   // it loses depth precision and makes closely spaced model surfaces z-fight.

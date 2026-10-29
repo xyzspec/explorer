@@ -52,15 +52,15 @@ describe('view point tour policy', () => {
   });
 });
 
-it('restores a remembered gallery viewpoint and clamps both ends instead of wrapping', () => {
+it('restores a remembered gallery viewpoint and wraps both ends', () => {
   const remembered: number[] = [];
   const { result } = renderHook(() => useViewPointTour(document, 3, true, false, true, 1, index => remembered.push(index)));
   expect(result.current.index).toBe(1);
   act(() => result.current.select(2));
   act(() => result.current.traverse(1));
-  expect(result.current.index).toBe(2);
+  expect(result.current.index).toBe(0);
   act(() => result.current.select(0));
   act(() => result.current.traverse(-1));
-  expect(result.current.index).toBe(0);
-  expect(remembered).toEqual([2, 2, 0, 0]);
+  expect(result.current.index).toBe(2);
+  expect(remembered).toEqual([2, 0, 0, 2]);
 });

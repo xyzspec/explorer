@@ -15,8 +15,8 @@ export function useViewPointTour(document: SpatialDocument, count: number, mobil
   }, [document, count, current?.orbitTarget, onIndexChange]);
   const traverse = useCallback((delta: number) => {
     if (!count || index === undefined) return;
-    select(forceTour ? index + delta : ((index + delta) % count + count) % count);
-  }, [count, index, select, forceTour]);
+    select(((index + delta) % count + count) % count);
+  }, [count, index, select]);
   const exit = useCallback(() => { if (!mobile && !forceTour) setTour(undefined); }, [mobile, forceTour]);
   return { index, select, start, traverse, exit: mobile || forceTour ? undefined : exit, orbitTarget: current?.orbitTarget };
 }

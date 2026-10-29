@@ -31,9 +31,9 @@ export function GalleryPager({ points, index, looking, onLookingChange, onSelect
     <small className="gallery-mode-hint">{looking ? t('Drag to look around') : points.length > 1 ? t('Swipe sideways for viewpoints') : ''}</small>
     {index !== undefined && <strong aria-live="polite">{viewpointLabel(points[current], current)}</strong>}
     {points.length > 1 && <nav aria-label={t('View point traversal')} className="gallery-pagination">
-      <button type="button" aria-label={t('Previous view point')} disabled={current === 0} onClick={() => onSelect(current - 1)}>‹</button>
+      <button type="button" aria-label={t('Previous view point')} onClick={() => onSelect((current - 1 + points.length) % points.length)}>‹</button>
       {points.slice(first, first + 7).map((point, offset) => <button type="button" key={point.id} className="gallery-dot" aria-label={t('Go to {name}, {current} of {total}', { name: viewpointLabel(point, first + offset), current: first + offset + 1, total: points.length })} aria-current={current === first + offset ? 'step' : undefined} onClick={() => onSelect(first + offset)}><span /></button>)}
-      <button type="button" aria-label={t('Next view point')} disabled={current === points.length - 1} onClick={() => onSelect(current + 1)}>›</button>
+      <button type="button" aria-label={t('Next view point')} onClick={() => onSelect((current + 1) % points.length)}>›</button>
     </nav>}
     {points.length > 7 && <small>{current + 1} / {points.length}</small>}
   </div>;
