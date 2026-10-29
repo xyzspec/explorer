@@ -40,9 +40,7 @@ jobs:
         run: npm test
 
       - name: Build for GitHub Pages
-        run: |
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          npm run build -- --base="/${REPO_NAME}/"
+        run: npm run build -- --base=/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
