@@ -13,7 +13,10 @@ export function readGallery(): GalleryDocument[] {
   try {
     const stored: unknown = JSON.parse(localStorage.getItem('xyzdsl-gallery') ?? 'null');
     if (Array.isArray(stored) && stored.every(item => item && typeof item.id === 'string' && typeof item.title === 'string' && typeof item.source === 'string')) {
-      const migrated = stored.map(item => ({ ...item, source: migrateBoxShell(item.source) }));
+      const migrated = stored.map(item => ({
+        ...item,
+        source: item.id === 'lepapayer' ? lepapayer : migrateBoxShell(item.source),
+      }));
       if (migrated.some((item, index) => item.source !== stored[index].source)) {
         try { localStorage.setItem('xyzdsl-gallery', JSON.stringify(migrated)); } catch { /* Still use the saved collection when writes are unavailable. */ }
       }

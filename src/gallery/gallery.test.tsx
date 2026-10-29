@@ -56,3 +56,13 @@ it('opens gallery documents without offering removal', () => {
   expect(view.queryByLabelText(/Remove .* from gallery/)).toBeNull();
   expect(onChange).not.toHaveBeenCalled();
 });
+
+it('refreshes the bundled LePapayer in saved galleries while retaining imported documents', () => {
+  const custom = { id: 'imported-room', title: 'My room', source: '"Room/+0+2/+0+2/+0+2":""' };
+  localStorage.setItem('xyzdsl-gallery', JSON.stringify([
+    { id: 'lepapayer', title: 'LePapayer', source: 'old bundled source' }, custom,
+  ]));
+  const expected = [INITIAL_GALLERY[0], custom];
+  expect(readGallery()).toEqual(expected);
+  expect(JSON.parse(localStorage.getItem('xyzdsl-gallery')!)).toEqual(expected);
+});
