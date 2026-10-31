@@ -1,4 +1,5 @@
 import defaultDraft from '../defaultDraft.xyzdsl?raw';
+import salouis from '../gallery/salouis.xyzdsl?raw';
 import { viewPoints } from './viewPoints';
 import { describe, expect, it } from 'vitest';
 import { createSpatialDocument } from '../model/createSpatialDocument';
@@ -72,8 +73,8 @@ describe('point-shadow precision', () => {
   });
 });
 
-it('ships the Sal default draft with two explicit lights and three viewpoints', () => {
-  const document = createSpatialDocument(defaultDraft);
+it('ships the Salouis gallery scene with two explicit lights and three viewpoints', () => {
+  const document = createSpatialDocument(salouis);
   expect(document.diagnostics).toEqual([]);
   const lights = lightNodes(document);
   expect(lights).toHaveLength(2);
@@ -81,4 +82,11 @@ it('ships the Sal default draft with two explicit lights and three viewpoints', 
     expect(light.light).toEqual({ color: '#ffffff', intensity: 10, distance: 0 });
   }
   expect(viewPoints(document)).toHaveLength(3);
+});
+
+it('starts the local draft blank', () => {
+  expect(defaultDraft).toBe('');
+  const document = createSpatialDocument(defaultDraft);
+  expect(document.diagnostics).toEqual([]);
+  expect(document.nodes).toEqual([]);
 });

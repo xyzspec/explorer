@@ -38,7 +38,7 @@ it('falls back to remote sources, then the draft when remote sources disappear',
   expect(view.getByTestId('scene').textContent).not.toContain('Sal/');
   state.remote = ''; state.transactions = [{}];
   view.rerender(<App />);
-  expect(view.getByTestId('scene').textContent).toContain('Sal/');
+  expect(view.getByTestId('scene').textContent).toBe('');
   expect(view.getByTestId('scene').textContent).not.toContain('Remote/');
 });
 
