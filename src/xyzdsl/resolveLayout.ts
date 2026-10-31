@@ -31,6 +31,19 @@ export function resolveLayout(
 
   function visit(object: ResolvedSpatialObject, parent?: ResolvedSpatialObject, originalParent?: ResolvedSpatialObject, attached = false, cellResolved = false): void {
     if (object.boxGrid?.invalid || object.cell?.invalid) return;
+    if (object.selfOrigin === 'invalid') return;
+    const selfOrigin = object.selfOrigin === 'auto' ? undefined : object.selfOrigin;
+    if (selfOrigin) {
+      if (object.surface || object.cell) {
+        report(object, 'self-origin cannot be combined with surface or cell; those declarations define their own interior coordinate frames.');
+        return;
+      }
+      if (!parent?.boxSurface) {
+        if (![...templates].some(path => object.namespacePath.startsWith(path))) report(object, 'self-origin requires a nearest concrete box-shell parent.');
+        return;
+      }
+    }
+
     if (object.cell && !cellResolved) {
       const layout = parent?.gridLayout;
       if (!parent || !layout) {
@@ -168,7 +181,7 @@ export function resolveLayout(
     // Authored children use the interior origin; generated panels remain in the outer frame.
     const nearFaces = ['left', 'bottom', 'front'] as const;
     const farFaces = ['right', 'top', 'back'] as const;
-    const outsideOrigin = parent?.boxSurface?.origin === 'outside';
+    const outsideOrigin = (selfOrigin ?? parent?.boxSurface?.origin) === 'outside';
     const inset = nearFaces.map(face => outsideOrigin ? 0 : parent?.boxSurface?.faces[face]?.thickness ?? 0);
     const extents = SIZES.map((size, index) => parent
       ? parent.box[size] / (parent.anchorScale?.[index] ?? 1) - inset[index] - (outsideOrigin ? 0 : parent.boxSurface?.faces[farFaces[index]]?.thickness ?? 0)

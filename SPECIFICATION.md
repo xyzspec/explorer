@@ -556,6 +556,39 @@ Options require an enabled shell (including one supplied by a reference);
 invalid values or use without a shell produce diagnostics and omit the affected
 subtree. Existing scenes keep their original sizing and child coordinates.
 
+### Per-child origin overrides
+
+An ordinary child can override its enclosing shell's `box-shell-origin` with
+`self-origin: inside | outside | auto`. `auto` is the default and follows the
+parent shell's setting. This property changes the child's placement frame,
+including available extents for fill, far-edge alignment, repetition, and repeat
+clipping. It does not change the parent's shell geometry or other children.
+
+```xyzdsl
+"Room/+0+4/+0+3/+0+4":"box-shell: 1d white;"
+"Room/Bed/+0+155c/+0+8d/+0+205c":"self-origin: inside; model: bed.glb;"
+"Room/OuterItem/+0+1/+0+1/+0+1":"self-origin: outside; model: item.glb;"
+```
+
+The bed starts at `(0.1, 0.1, 0.1)` metres; `OuterItem` starts at `(0, 0, 0)`.
+An inside override also works when the parent declares
+`box-shell-origin: outside`. Missing and asymmetric panel thicknesses, inside
+sizing, rotations, and reference scaling keep their existing meanings.
+
+`self-origin` is local structural state. References retain it and may override
+it; `self-origin: auto` resets a copied override to the new parent's policy.
+Ordinary descendants do not inherit it. For a child that is itself a shell,
+`self-origin` positions that shell in its parent; its own `box-shell-origin`
+still governs its children independently. Namespace-only groups are skipped
+when identifying the nearest concrete parent.
+
+An explicit `inside` or `outside` override requires a concrete, enabled parent
+shell. It cannot be combined with active `cell` or `surface` placement, which
+already chooses a distinct coordinate frame. These conflicts and malformed
+values produce diagnostics and omit the affected child subtree. `auto` imposes
+no override and is allowed with cell/surface placement or an ordinary parent.
+Unanchored referenced templates are checked when placed in their actual parent.
+
 ### Interior coordinates for enclosure children
 
 By default, children of a `box-shell` enclosure start at its interior corner. Local

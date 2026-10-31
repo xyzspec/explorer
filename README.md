@@ -373,3 +373,17 @@ The default is `outside`. Both properties can be combined:
 
 See [shell sizing and child origin](SPECIFICATION.md#shell-sizing-and-child-origin)
 for references, omitted faces, and parent-relative placement rules.
+
+
+An individual child can override the parent policy with `self-origin`:
+
+```xyzdsl
+"Room/+0+4/+0+3/+0+4":"box-shell: 1d white;"
+"Room/Inside/+0+1/+0+1/+0+1":"self-origin: inside; model: item.glb;"
+"Room/Outside/+0+1/+0+1/+0+1":"self-origin: outside; model: item.glb;"
+```
+
+`self-origin: auto` (the default) follows `box-shell-origin` and can reset an
+inherited reference override. The selected frame also governs fill, far-edge
+alignment, and repetition. Explicit overrides require a parent shell and cannot
+combine with `cell` or `surface` placement. See [per-child origin overrides](SPECIFICATION.md#per-child-origin-overrides).

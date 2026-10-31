@@ -463,7 +463,20 @@ export function resolveXyzDslDocument(objects: SpatialObject[]): {
     grids.set(object, grid);
     return grid;
   };
+  const selfOrigins = new Map<SpatialObject, SpatialObject['selfOrigin']>();
+  const selfOriginFor = (object: SpatialObject): SpatialObject['selfOrigin'] => {
+    if (selfOrigins.has(object)) return selfOrigins.get(object);
+    const target = object.reference.targetPath ? latestEntryBefore(objects, object.reference.targetPath, object.lineNumber) : undefined;
+    let value = object.selfOrigin ?? (target ? selfOriginFor(target) : undefined);
+    if (object.declarationOnly && value !== undefined && value !== 'auto') {
+      value = 'invalid';
+      diagnostics.push({ line: object.lineNumber, source: object.source, message: 'self-origin requires a concrete box declaration.' });
+    }
+    selfOrigins.set(object, value);
+    return value;
+  };
   objects = objects.map(object => {
+    const selfOrigin = selfOriginFor(object);
     const grid = gridFor(object);
     const boxSurface = surfaceFor(object);
     let attachmentSource = object;
@@ -474,7 +487,7 @@ export function resolveXyzDslDocument(objects: SpatialObject[]): {
     }
     object = { ...object, surface: attachmentSource.surface };
     if (object.declarationOnly && object.surface) diagnostics.push({ line: object.lineNumber, source: object.source, message: 'surface requires a concrete declaration.' });
-    return { ...object, ...grid, boxSurface, material: boxSurface ? { ...object.material, observable: undefined } : object.material };
+    return { ...object, ...grid, selfOrigin, boxSurface, material: boxSurface ? { ...object.material, observable: undefined } : object.material };
   });
   const effectiveObjects = latestNamedEntries(objects);
   const instances = effectiveObjects.filter(

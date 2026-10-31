@@ -112,6 +112,7 @@ export interface XyzDslBoxSurfaceSpec {
 }
 
 export interface SpatialObject {
+  selfOrigin?: 'inside' | 'outside' | 'auto' | 'invalid';
   boxGrid?: import('./boxGrid').BoxGridSpec | null;
   cell?: import('./boxGrid').CellSpec | null;
   gridDeclarations?: import('./propertyParser').XyzDslPropertyDeclaration[];

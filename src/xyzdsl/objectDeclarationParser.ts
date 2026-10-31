@@ -22,6 +22,7 @@ const SUPPORTED_OBJECT_PROPERTIES = new Set([
   ...SURFACE_PROPERTIES,
   ...GRID_PROPERTIES,
   'box-shell',
+  'self-origin',
   'surface',
   'view-point',
   'light-source',
@@ -53,6 +54,7 @@ const SUPPORTED_OBJECT_PROPERTIES = new Set([
 ]);
 
 export interface XyzDslObjectPropertiesSpec {
+  selfOrigin?: import('./types').SpatialObject['selfOrigin'];
   gridDeclarations?: import('./propertyParser').XyzDslPropertyDeclaration[];
   surface?: import('./surfaceAttachment').SurfaceAttachment;
   surfaceDeclarations?: import('./propertyParser').XyzDslPropertyDeclaration[];
@@ -104,7 +106,12 @@ export function parseObjectProperties(source: string): XyzDslObjectPropertiesSpe
   diagnostics.push(...lightMaterial.diagnostics);
   if (!enabled && declarations.some(d => d.property.startsWith('light-') && d.property !== 'light-source')) diagnostics.push('Light options require light-source: true or point.');
 
+  const originValue = declarations.filter(d => d.property === 'self-origin').at(-1)?.value;
+  const selfOrigin = originValue === undefined || originValue === 'inside' || originValue === 'outside' || originValue === 'auto' ? originValue : 'invalid';
+  if (selfOrigin === 'invalid') diagnostics.push('self-origin requires inside, outside, or auto.');
+
   return {
+    selfOrigin,
     gridDeclarations: declarations.filter(d => GRID_PROPERTIES.includes(d.property)),
     surfaceDeclarations: declarations.filter(d => d.property === 'box-shell' || d.property === 'observable' || SURFACE_PROPERTIES.includes(d.property)),
     surface: parseSurfaceAttachment(declarations, diagnostics),
