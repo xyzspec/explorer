@@ -168,10 +168,31 @@ export function resolveLayout(
     // Authored children use the interior origin; generated panels remain in the outer frame.
     const nearFaces = ['left', 'bottom', 'front'] as const;
     const farFaces = ['right', 'top', 'back'] as const;
-    const inset = nearFaces.map(face => parent?.boxSurface?.faces[face]?.thickness ?? 0);
+    const outsideOrigin = parent?.boxSurface?.origin === 'outside';
+    const inset = nearFaces.map(face => outsideOrigin ? 0 : parent?.boxSurface?.faces[face]?.thickness ?? 0);
     const extents = SIZES.map((size, index) => parent
-      ? parent.box[size] / (parent.anchorScale?.[index] ?? 1) - inset[index] - (parent.boxSurface?.faces[farFaces[index]]?.thickness ?? 0)
+      ? parent.box[size] / (parent.anchorScale?.[index] ?? 1) - inset[index] - (outsideOrigin ? 0 : parent.boxSurface?.faces[farFaces[index]]?.thickness ?? 0)
       : 0);
+    const surface = object.boxSurface;
+    const panelSums = nearFaces.map((face, a) => (surface?.faces[face]?.thickness ?? 0) + (surface?.faces[farFaces[a]]?.thickness ?? 0));
+    if (object.referenceDimensions?.some(size => !Number.isFinite(size) || size <= 0)) {
+      report(object, 'ref-scale requires definite positive template dimensions; declare a fixed template anchor when its children use parent fill.');
+      return;
+    }
+    // Resolve all placement against physical outer extents, including filled and repeated shells.
+    if (surface?.sizing === 'inside') {
+      for (let a = 0; a < 3; a++) {
+        if (fill.includes(AXES[a])) continue;
+        const declared = box[SIZES[a]];
+        const referenceOuter = object.referenceDimensions?.[a];
+        const referenceClear = referenceOuter === undefined ? undefined : referenceOuter - panelSums[a];
+        if (!(declared > 0) || (referenceClear !== undefined && !(referenceClear > 0))) {
+          report(object, 'box-shell-sizing: inside requires positive clear dimensions, including the reference template interior.');
+          return;
+        }
+        box[SIZES[a]] = referenceOuter === undefined ? declared + panelSums[a] : declared * referenceOuter / referenceClear!;
+      }
+    }
     for (const axis of end) {
       const index = AXES.indexOf(axis);
       const extent = extents[index];
@@ -195,13 +216,8 @@ export function resolveLayout(
     }
     let anchorScale = object.anchorScale;
     if (object.referenceDimensions) {
-      if (object.referenceDimensions.some(size => !Number.isFinite(size) || size <= 0)) {
-        report(object, 'ref-scale requires definite positive template dimensions; declare a fixed template anchor when its children use parent fill.');
-        return;
-      }
       anchorScale = SIZES.map((size, index) => box[size] / object.referenceDimensions![index]) as [number, number, number];
     }
-    const surface = object.boxSurface;
     const localSizes = SIZES.map((size, index) => box[size] / (anchorScale?.[index] ?? 1));
     if (surface && (object.geometry.kind !== 'box' || object.geometry.operation || object.geometry['box-radius'] || object.geometry.puff || object.model.source || object.content.kind || object.light || object.viewPoint)) {
       report(object, 'box-shell supports plain boxes only; model, content, light, view-point, CSG and deformed geometry combinations are unsupported.');

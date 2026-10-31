@@ -7,7 +7,7 @@ export const SURFACE_FACES: SurfaceFace[] = ['top', 'right', 'bottom', 'left', '
 export const SURFACE_DIRECTIONS: Record<SurfaceFace, XyzDslObservable> = {
   top: '+y', right: '+x', bottom: '-y', left: '-x', front: '-z', back: '+z',
 };
-export const SURFACE_PROPERTIES = SURFACE_FACES.flatMap(face => [`box-shell-${face}`, `observable-${face}`]);
+export const SURFACE_PROPERTIES = [...SURFACE_FACES.flatMap(face => [`box-shell-${face}`, `observable-${face}`]), 'box-shell-origin', 'box-shell-sizing'];
 
 // Commas inside CSS color functions are not shorthand separators.
 function values(raw: string): string[] {
@@ -35,12 +35,21 @@ export function parseBoxSurfaceDeclaration(
 ): XyzDslBoxSurfaceSpec | null | undefined {
   if (base === undefined && !declarations.some(d => d.property === 'box-shell' || SURFACE_PROPERTIES.includes(d.property) || (d.property === 'observable' && d.value.includes(',')))) return undefined;
   let active = Boolean(base);
+  let origin = base?.origin;
+  let sizing = base?.sizing;
   const faces = Object.fromEntries(SURFACE_FACES.map(face => [face, base?.faces[face] ?? null])) as XyzDslBoxSurfaceSpec['faces'];
   const observable = { ...base?.observable };
   let invalid = base?.invalid ?? false;
   let mentioned = base !== undefined;
   for (const declaration of declarations) {
     const { property, value } = declaration;
+    if (property === 'box-shell-origin' || property === 'box-shell-sizing') {
+      if (value !== 'inside' && value !== 'outside') {
+        invalid = true; diagnostics.push(`${property} requires inside or outside.`);
+      } else if (property === 'box-shell-origin') origin = value;
+      else sizing = value;
+      continue;
+    }
     const surface = property === 'box-shell' || property.startsWith('box-shell-');
     const visibility = property === 'observable' || property.startsWith('observable-');
     if (!surface && !visibility) continue;
@@ -78,12 +87,12 @@ export function parseBoxSurfaceDeclaration(
   }
   if (!active && declarations.some(d => SURFACE_PROPERTIES.includes(d.property))) {
     invalid = true;
-    diagnostics.push('Face-specific properties require a box-shell enclosure.');
+    diagnostics.push('Face-specific and shell coordinate properties require a box-shell enclosure.');
   }
   if (!active && declarations.some(d => d.property === 'observable' && d.value.includes(','))) {
     invalid = true;
     diagnostics.push('Multi-face observable values require a box-shell enclosure.');
   }
-  if (invalid) return { faces, observable, invalid: true };
-  return active ? { faces, observable } : mentioned ? null : undefined;
+  if (invalid) return { faces, observable, origin, sizing, invalid: true };
+  return active ? { faces, observable, origin, sizing } : mentioned ? null : undefined;
 }

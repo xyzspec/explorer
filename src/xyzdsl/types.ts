@@ -104,6 +104,8 @@ export interface XyzDslRepeatSpec {
 export type SurfaceFace = 'top' | 'right' | 'bottom' | 'left' | 'front' | 'back';
 export interface SurfacePanelSpec { thickness: number; color: string | number }
 export interface XyzDslBoxSurfaceSpec {
+  origin?: 'inside' | 'outside';
+  sizing?: 'inside' | 'outside';
   faces: Record<SurfaceFace, SurfacePanelSpec | null>;
   observable: Partial<Record<SurfaceFace, XyzDslObservable | true>>;
   invalid?: boolean;

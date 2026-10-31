@@ -217,8 +217,9 @@ This gives the room 10 cm thick white walls, a ceiling, and a floor, within its
 3.66 × 3.30 × 3.91 metre outer box. The clear interior is
 3.46 × 3.10 × 3.71 metres. Children start at the interior wall surfaces and do not
 inherit the shell rule. References retain it; `box-shell: none` cancels it.
-Thickness uses existing path units and must be less than half every local box
-dimension. Generated panels support transforms, materials, repetition, collision,
+Thickness uses existing path units. With the default outside sizing, opposing
+panels must leave a positive clear interior; inside sizing adds panels around
+the declared clear dimensions. Generated panels support transforms, materials, repetition, collision,
 and shadows. Selecting a panel selects the enclosure's source declaration.
 Primitive CSG tools can cut overlapping panels; model/content/light combinations
 on the enclosure declaration remain unsupported. See the [box-shell specification](SPECIFICATION.md#box-shells) for
@@ -352,3 +353,23 @@ Components displaying translations subscribe with `useLocale()` and render with
 `t(message, values)`. Keep document titles, authored content, identifiers, XYZDSL
 syntax, and raw parser/server diagnostics intact; translate presentation labels
 rather than protocol or editor values.
+
+
+### Shell origin and inside dimensions
+
+Use `box-shell-origin: outside` on a shell to measure ordinary children from
+its outer corner. Their fill, far-edge alignment, and repetition use the outer
+box too. The default is `inside`; `surface` attachments and `cell` placements
+always keep their selected interior frames.
+
+Use `box-shell-sizing: inside` to declare clear interior dimensions. A room
+specified as 366 × 330 × 391 cm with 10 cm panels then measures
+386 × 350 × 411 cm outside. Its declared position stays at the outer corner.
+The default is `outside`. Both properties can be combined:
+
+```xyzdsl
+"Room/+0+366c/+0+330c/+0+391c":"box-shell: 1d white; box-shell-sizing: inside; box-shell-origin: outside;"
+```
+
+See [shell sizing and child origin](SPECIFICATION.md#shell-sizing-and-child-origin)
+for references, omitted faces, and parent-relative placement rules.

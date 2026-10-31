@@ -387,7 +387,8 @@ finite and strictly positive. The remaining value uses the existing `color`
 syntax. Repeated properties use the final value. `none` disables a copied
 surface rule and restores ordinary box/container behavior.
 
-The declared dimensions describe the outside of the enclosure. For local
+By default, declared dimensions describe the outside of the enclosure;
+`box-shell-sizing: inside` instead declares its clear interior. For local
 width W, height H, depth D, and thickness t, panels have these local boxes:
 
 | Panel | Offset (X, Y, Z) | Size (X, Y, Z) |
@@ -500,9 +501,64 @@ one obtained through a reference. Unsupported combinations or malformed values
 produce diagnostics and omit the affected concrete subtree. Observability on an
 omitted face has no rendering effect.
 
+### Shell sizing and child origin
+
+`box-shell-sizing` and `box-shell-origin` are independent structural properties
+on an enabled shell. Both accept `inside` or `outside`:
+
+| Property | Default | Meaning |
+| --- | --- | --- |
+| `box-shell-sizing` | `outside` | Whether fixed declared dimensions describe the outer box or the clear interior |
+| `box-shell-origin` | `inside` | Whether ordinary children use the clear interior frame or the outer box frame |
+
+```xyzdsl
+"Room/+0+366c/+0+330c/+0+391c":"box-shell: 1d white; box-shell-sizing: inside; box-shell-origin: outside;"
+"Room/Item/+0+155c/+0+8d/+0+205c":"model: item.glb;"
+```
+
+This room has a clear interior of 366 × 330 × 391 cm and outer dimensions of
+386 × 350 × 411 cm. Its item starts at the outer corner `(0, 0, 0)`. With the
+default `box-shell-origin: inside`, the item would start at `(0.1, 0.1, 0.1)`
+metres. `box-shell-origin` changes the children's frame; it does not move the
+shell itself. The shell's declared position remains its **outer near corner**
+with either sizing mode.
+
+For inside sizing, add the actual near and far panel thicknesses to each fixed
+clear dimension. Missing faces add zero; asymmetric thicknesses are supported.
+For outside sizing, subtract those thicknesses to derive the clear interior.
+Both modes require a finite positive clear interior. A shell with inside sizing
+may have panels thicker than its declared clear dimensions.
+
+Ordinary children use the selected frame's origin **and extent**: `+0`, fill,
+far-edge alignment, repetition, and repeat clipping all agree. Outside-origin
+children can occupy the panel volume; no extra clipping or wall avoidance is
+implied. Explicit `surface` attachments and `cell` placements retain their
+face-local and clear-cell frames, regardless of `box-shell-origin`. Grid tracks
+always partition the clear interior.
+
+When a shell itself uses fill, its physical outer size fits the available parent
+frame; inside sizing deducts its own panels to obtain the remaining clear space.
+Far-edge alignment uses the expanded outer size, and repetition uses that outer
+size plus the repeat gap, preventing overlap between repeated shells. Explicit
+fixed inside dimensions are never shrunk to fit a parent.
+
+References retain both settings and may override them in declaration order.
+They are not inherited by ordinary descendants: each nested shell defaults to
+outside sizing and inside origin. With `ref-scale: true`, the reference's sizing
+mode determines whether its target size denotes clear or outer dimensions;
+panels and contents scale together exactly once. For example, a template with
+2 m clear dimensions and 10 cm panels, referenced at 4 m with inside sizing,
+has 20 cm panels and 4.4 m outer dimensions. Referencing it at 4 m with outside
+sizing instead scales its 2.2 m outer box to 4 m.
+
+The `box-shell` panel shorthand does not reset these independent options.
+Options require an enabled shell (including one supplied by a reference);
+invalid values or use without a shell produce diagnostics and omit the affected
+subtree. Existing scenes keep their original sizing and child coordinates.
+
 ### Interior coordinates for enclosure children
 
-Children of a `box-shell` enclosure start at its interior corner. Local
+By default, children of a `box-shell` enclosure start at its interior corner. Local
 `+0` on X, Y, and Z lies on the inside of the left, bottom, and front panels,
 respectively. Missing panels contribute zero inset. The available child-layout
 extent is the outer local size minus the two opposing panel thicknesses.

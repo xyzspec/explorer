@@ -39,6 +39,7 @@ export interface ResolvedSpatialObject extends SpatialObject {
   layoutEligible?: boolean;
   materializedFrom?: string;
   anchorScale?: [number, number, number];
+  /** Physical outer template dimensions, before reference scaling. */
   referenceDimensions?: [number, number, number];
   repeatClip?: { axis: import('./types').AxisName; extent: number; start?: number }[];
   repeatSourceId?: string;
@@ -565,6 +566,15 @@ export function resolveXyzDslDocument(objects: SpatialObject[]): {
         candidate.namespace.length > targetNamespace.length &&
         namespaceStartsWith(candidate.namespace, targetNamespace),
     );
+    if (object.boxSurface) {
+      // Earlier shell references may have materialized children without authored
+      // declarations under their instance name. Retain those when copying again.
+      const authoredPaths = new Set(descendants.map(d => canonicalNamespacePath(d.namespace)));
+      descendants.push(...materializedObjects.filter(candidate =>
+        candidate.namespace.length > targetNamespace.length &&
+        namespaceStartsWith(candidate.namespace, targetNamespace) &&
+        !authoredPaths.has(candidate.namespacePath)));
+    }
     const isCompoundReference = descendants.length > 0;
     const instanceNamespace =
       isCompoundReference && object.namespace.length === 0
@@ -585,9 +595,21 @@ export function resolveXyzDslDocument(objects: SpatialObject[]): {
       object.lineNumber,
     );
     if (object.reference.scale && (isCompoundReference || object.boxSurface)) {
-      object.referenceDimensions = target?.box
-        ? dimensionsFromBox(target.box)
+      // A scaled shell reference retains its original local geometry; chained copies
+      // scale that same frame instead of treating the previous path size as unscaled.
+      let dimensionTarget = target;
+      if (object.boxSurface) while (dimensionTarget?.reference.scale && dimensionTarget.reference.targetPath) {
+        const previous = latestEntryBefore(objects, dimensionTarget.reference.targetPath, dimensionTarget.lineNumber);
+        if (!previous?.boxSurface || !previous.box) break;
+        dimensionTarget = previous;
+      }
+      object.referenceDimensions = dimensionTarget?.box
+        ? dimensionsFromBox(dimensionTarget.box)
         : dimensionsFromRootChildren(descendants, targetNamespace);
+      if (object.referenceDimensions && dimensionTarget?.boxSurface?.sizing === 'inside') {
+        const near = ['left', 'bottom', 'front'] as const, far = ['right', 'top', 'back'] as const;
+        object.referenceDimensions = object.referenceDimensions.map((n, a) => n + (dimensionTarget!.boxSurface!.faces[near[a]]?.thickness ?? 0) + (dimensionTarget!.boxSurface!.faces[far[a]]?.thickness ?? 0)) as [number, number, number];
+      }
       if (!object.referenceDimensions) object.referenceDimensions = [NaN, NaN, NaN];
     }
     const anchorScale = object.reference.scale
@@ -606,7 +628,7 @@ export function resolveXyzDslDocument(objects: SpatialObject[]): {
     descendants.forEach((descendant, descendantIndex) => {
       const resolvedDescendant =
         originalByObject.get(descendant) ??
-        resolveObject(descendant, descendantIndex);
+        (materializedObjects.includes(descendant as ResolvedSpatialObject) ? descendant as ResolvedSpatialObject : resolveObject(descendant, descendantIndex));
       const suffix = descendant.namespace.slice(targetNamespace.length);
       const namespace = [...instanceNamespace, ...suffix];
       const properties = mergeResolvedProperties(
