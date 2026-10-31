@@ -125,17 +125,17 @@ export function XyzCornerGrid({ width, depth, height }: XyzCornerGridProps) {
     <group>
       <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[width / 2, 0, depth / 2]} userData={{ povCollisionSurface: true }}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial {...floorMaterial} {...GRID_SURFACE_DEPTH_BIAS} />
+        <meshStandardMaterial {...floorMaterial} {...GRID_SURFACE_DEPTH_BIAS} emissive={floorMaterial.color} emissiveIntensity={0.5} />
       </mesh>
 
       <mesh receiveShadow position={[width / 2, height / 2, 0]} userData={{ povCollisionSurface: true }}>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial {...wallMaterial} {...GRID_SURFACE_DEPTH_BIAS} />
+        <meshStandardMaterial {...wallMaterial} {...GRID_SURFACE_DEPTH_BIAS} emissive={wallMaterial.color} emissiveIntensity={0.5} />
       </mesh>
 
       <mesh receiveShadow rotation={[0, Math.PI / 2, 0]} position={[0, height / 2, depth / 2]} userData={{ povCollisionSurface: true }}>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial {...wallMaterial} {...GRID_SURFACE_DEPTH_BIAS} color="#cfc8bc" />
+        <meshStandardMaterial {...wallMaterial} {...GRID_SURFACE_DEPTH_BIAS} color="#cfc8bc" emissive="#cfc8bc" emissiveIntensity={0.5} />
       </mesh>
 
       {(['xy', 'xz', 'yz'] as const).map((plane) => (
