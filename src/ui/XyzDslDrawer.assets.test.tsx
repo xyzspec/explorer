@@ -42,9 +42,14 @@ it('makes assets reachable alongside the explorer object and data tabs', () => {
     onRotationStepChange: vi.fn(),
     assetsPanel: <p>Folder controls</p>,
   };
-  render(<XyzDslDrawer {...props} />);
+  const view = render(<XyzDslDrawer {...props} />);
   fireEvent.click(screen.getByRole('tab', { name: 'Assets' }));
   expect(screen.getByText('Folder controls')).toBeTruthy();
   expect(screen.getByRole('tab', { name: 'Objects' })).toBeTruthy();
   expect(screen.getByRole('tab', { name: 'Data' })).toBeTruthy();
+  view.rerender(<XyzDslDrawer {...props} sourceOpenRequest={1} />);
+  expect(screen.getByRole('tab', { name: 'Source' }).getAttribute('aria-selected')).toBe('true');
+  fireEvent.click(screen.getByRole('tab', { name: 'Objects' }));
+  view.rerender(<XyzDslDrawer {...props} sourceOpenRequest={2} />);
+  expect(screen.getByRole('tab', { name: 'Source' }).getAttribute('aria-selected')).toBe('true');
 });

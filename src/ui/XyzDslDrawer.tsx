@@ -1,6 +1,6 @@
 import { t, useLocale } from '../i18n';
 import { WorkspacePanel } from './WorkspacePanel';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import type { SpatialDocument } from '../model/SpatialDocument';
 import type { SpatialNode } from '../model/SpatialNode';
 import type { AxisName } from '../xyzdsl/types';
@@ -98,6 +98,7 @@ interface XyzDslDrawerProps {
   document: SpatialDocument;
   isOpen: boolean;
   source: string;
+  sourceOpenRequest?: number;
   transactionPublicKey: string;
   transactionPublicKeyShareUrl?: string;
   transactionRange: TransactionRange;
@@ -200,9 +201,13 @@ export function XyzDslDrawer({
   rotationStep,
   onLinearStepChoiceChange,
   onRotationStepChange,
+  sourceOpenRequest = 0,
 }: XyzDslDrawerProps) {
   useLocale();
   const [activeTab, setActiveTab] = usePersistentState<DrawerTab>('xyzdsl-drawer-active-tab', 'objects');
+  useEffect(() => {
+    if (sourceOpenRequest) setActiveTab('source');
+  }, [sourceOpenRequest, setActiveTab]);
   const problemCount = document.diagnostics.length + rejectedTransactions.length;
   const tabs: { id: DrawerTab; label: string; count?: number }[] = [
     ...(galleryPanel ? [{ id: 'gallery' as const, label: t("Gallery") }] : []),

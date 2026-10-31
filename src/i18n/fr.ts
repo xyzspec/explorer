@@ -1,5 +1,7 @@
 /** English source messages are stable keys; user content and XYZDSL syntax stay unchanged. */
 export const fr: Record<string, string> = {
+  "Replace your current local draft with this gallery document?": "Remplacer votre brouillon local actuel par ce document de la galerie ?",
+  "Edit local copy": "Modifier une copie locale",
   "Tap to look around": "Touchez pour regarder autour",
   "Look around": "Regarder autour",
   "Done": "Terminé",

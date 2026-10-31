@@ -156,6 +156,8 @@ function summarizeLineChanges(originalSource: string, nextSource: string): LineC
 export default function App() {
   useLocale();
   const [authoringSource, setAuthoringSource] = useState(INITIAL_XYZDSL);
+  const [galleryDraft, setGalleryDraft] = useState(false);
+  const [sourceOpenRequest, setSourceOpenRequest] = useState(0);
   const assets = useSceneAssets(setAuthoringSource);
   const [remoteBaselineAppliedToEditor, setRemoteBaselineAppliedToEditor] = useState('');
   const latestRemoteBaselineRef = useRef('');
@@ -484,7 +486,7 @@ export default function App() {
   const remoteBaselineChanged = hasRemoteBaseline && remoteBaselineSource !== remoteBaselineAppliedToEditor;
 
   useEffect(() => {
-    if (!hasRemoteBaseline || assets.isLocal) {
+    if (!hasRemoteBaseline || assets.isLocal || galleryDraft) {
       return;
     }
 
@@ -506,15 +508,15 @@ export default function App() {
 
     setRemoteBaselineAppliedToEditor(remoteBaselineSource);
     setAuthoringSource(remoteBaselineSource);
-  }, [authoringSource, hasRemoteBaseline, remoteBaselineAppliedToEditor, remoteBaselineSource, assets.isLocal]);
+  }, [authoringSource, hasRemoteBaseline, remoteBaselineAppliedToEditor, remoteBaselineSource, assets.isLocal, galleryDraft]);
 
   const authoringChangeSummary = useMemo(
     () => summarizeLineChanges(remoteBaselineAppliedToEditor, authoringSource),
     [authoringSource, remoteBaselineAppliedToEditor],
   );
   const renderedSource = useMemo(
-    () => assets.isLocal ? authoringSource : composeTransactionSources(authoringSource, secondaryTransactionOverlayStreams.filter((tenant) => tenant.enabled)),
-    [authoringSource, secondaryTransactionOverlayStreams, assets.isLocal],
+    () => assets.isLocal || galleryDraft ? authoringSource : composeTransactionSources(authoringSource, secondaryTransactionOverlayStreams.filter((tenant) => tenant.enabled)),
+    [authoringSource, secondaryTransactionOverlayStreams, assets.isLocal, galleryDraft],
   );
   const document = useMemo(() => createSpatialDocument(renderedSource), [renderedSource]);
   const loadedRemoteSource = useMemo(() => composeTransactionSources(remoteBaselineSource, secondaryTransactionOverlayStreams.filter(tenant => tenant.enabled)), [remoteBaselineSource, secondaryTransactionOverlayStreams]);
@@ -804,6 +806,21 @@ export default function App() {
     setAuthoringSource(nextSource);
   }, []);
 
+  const editGalleryDocument = (entry: GalleryDocument) => {
+    if (hasAuthoringEdits && authoringSource !== entry.source && !window.confirm(t("Replace your current local draft with this gallery document?"))) return;
+    assets.useRemote();
+    setGalleryDraft(true);
+    setAuthoringSource(entry.source);
+    setRemoteBaselineAppliedToEditor('');
+    setSelectedNodeId(undefined);
+    setSelectedLeafNodeId(undefined);
+    setSelectedSceneHighlightNodeId(undefined);
+    setSelectedLineNumber(undefined);
+    setAppMode('editor');
+    setDrawerOpen(true);
+    setSourceOpenRequest(request => request + 1);
+  };
+
   const handleModeChange = useCallback((mode: 'viewer' | 'editor') => {
     if (isMobileViewport && mode === 'editor') return;
     setAppMode(mode);
@@ -895,6 +912,7 @@ export default function App() {
     }
 
     assets.useRemote();
+    setGalleryDraft(false);
     setAuthoringSource(remoteBaselineSource);
     setRemoteBaselineAppliedToEditor(remoteBaselineSource);
   }, [hasAuthoringEdits, hasRemoteBaseline, remoteBaselineSource, assets.useRemote]);
@@ -938,7 +956,8 @@ export default function App() {
         onCreateNode={createProspectiveObject}
       />}
       <XyzDslDrawer
-        galleryPanel={<GalleryPanel documents={galleryDocuments} onChange={changeGallery} onOpen={index => { if (galleryLink.requested) backToGallery(); setGalleryIndex(index); setAppMode('viewer'); }} />}
+        sourceOpenRequest={sourceOpenRequest}
+        galleryPanel={<GalleryPanel onEdit={editGalleryDocument} documents={galleryDocuments} onChange={changeGallery} onOpen={index => { if (galleryLink.requested) backToGallery(); setGalleryIndex(index); setAppMode('viewer'); }} />}
         assetsPanel={<SceneAssetsPanel isLocal={assets.isLocal} error={assets.error || assetError} onOpenBundle={assets.openBundle} onOpenFolder={assets.openFolder} onUseRemote={assets.useRemote} />}
         appMode={appMode}
         allowModeSwitch={!isMobileViewport}

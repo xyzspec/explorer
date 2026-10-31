@@ -2,8 +2,8 @@ import { t, useLocale } from '../i18n';
 import { GalleryShareButton } from './GalleryShareButton';
 import { useState } from 'react';
 import type { GalleryDocument } from './gallery';
-export function GalleryPanel({ documents, onChange, onOpen }: {
-  documents: GalleryDocument[]; onChange: (documents: GalleryDocument[]) => void; onOpen: (index: number) => void;
+export function GalleryPanel({ documents, onChange, onOpen, onEdit }: {
+  documents: GalleryDocument[]; onChange: (documents: GalleryDocument[]) => void; onOpen: (index: number) => void; onEdit?: (document: GalleryDocument) => void;
 }) {
   useLocale();
   const [error, setError] = useState('');
@@ -22,6 +22,7 @@ export function GalleryPanel({ documents, onChange, onOpen }: {
     {!documents.length && <p>{t("No gallery documents. The viewer opens loaded remote sources, or the local draft when none are loaded.")}</p>}
     <ol>{documents.map((document, index) => <li key={document.id}>
       <button type="button" onClick={() => onOpen(index)}>{document.title}<small>{t("Open tour →")}</small></button>
+      {onEdit && <button type="button" onClick={() => onEdit(document)}>{t("Edit local copy")}</button>}
       <GalleryShareButton document={document} />
     </li>)}</ol>
   </section>;

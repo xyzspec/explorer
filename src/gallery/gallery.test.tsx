@@ -66,3 +66,12 @@ it('refreshes the bundled LePapayer in saved galleries while retaining imported 
   expect(readGallery()).toEqual(expected);
   expect(JSON.parse(localStorage.getItem('xyzdsl-gallery')!)).toEqual(expected);
 });
+
+it('offers a local copy of the chosen document without changing the gallery', () => {
+  const edit = vi.fn(), change = vi.fn();
+  const view = render(<GalleryPanel documents={INITIAL_GALLERY} onOpen={vi.fn()} onChange={change} onEdit={edit} />);
+  const buttons = view.container.querySelectorAll('li');
+  fireEvent.click(buttons[1].querySelectorAll('button')[1]);
+  expect(edit).toHaveBeenCalledWith(INITIAL_GALLERY[1]);
+  expect(change).not.toHaveBeenCalled();
+});
