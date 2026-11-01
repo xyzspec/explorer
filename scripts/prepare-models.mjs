@@ -1,5 +1,6 @@
 import { mkdir, readdir, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { removeEmptyPrimitives } from './model-geometry.mjs';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS, KHRTextureBasisu } from '@gltf-transform/extensions';
 import { cloneDocument, compactPrimitive, dedup, dequantize, normals, getBounds, getTextureColorSpace, meshopt, prune, simplify, weld } from '@gltf-transform/functions';
@@ -67,6 +68,7 @@ for (const name of names) {
     } else {
       await doc.transform(simplify({ simplifier: { ...MeshoptSimplifier, simplify: (indices, positions, stride, count, error) => MeshoptSimplifier.simplify(indices, positions, stride, count, error, ['Prune', 'Permissive']) }, ratio: Math.min(1, target / originalTriangles), error: .1 }));
     }
+    removeEmptyPrimitives(doc);
     await doc.transform(prune());
     let triangles = triangleCount(doc);
     // Scan topology can prevent edge-collapse simplification from reaching a tiny preview.
@@ -81,6 +83,7 @@ for (const name of names) {
         primitive.setIndices(doc.createAccessor().setType('SCALAR').setArray(simplified).setBuffer(indices.getBuffer()));
         compactPrimitive(primitive);
       }
+      removeEmptyPrimitives(doc);
       await doc.transform(prune());
       triangles = triangleCount(doc);
     }
@@ -96,6 +99,8 @@ for (const name of names) {
       }
     }
     await doc.transform(meshopt({ encoder: MeshoptEncoder, level: 'medium' }));
+    // Normal generation and quantization can leave unused accessors behind.
+    await doc.transform(prune());
     const file = `${stem}.${level}.glb`;
     await io.write(path.join(output, file), doc);
     record.levels[level] = { file, triangles, bytes: (await stat(path.join(output, file))).size, textures: doc.getRoot().listTextures().map(texture => texture.getSize()) };

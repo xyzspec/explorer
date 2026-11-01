@@ -15,6 +15,7 @@
     "assets:prepare": "node scripts/prepare-models.mjs",
     "test:performance": "playwright test",
     "test:decoders": "node --test scripts/basis-csp.test.mjs",
+    "test:assets": "node --test scripts/model-geometry.test.mjs",
     "assets:inspect": "node scripts/inspect-models.mjs"
   },
   "dependencies": {
