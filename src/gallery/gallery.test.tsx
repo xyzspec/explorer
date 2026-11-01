@@ -23,11 +23,11 @@ it('retains a migrated custom gallery when storage cannot be updated', () => {
     expect(readGallery()).toEqual([{ id: 'custom', title: 'My room', source: source.replace('box-surface', 'box-shell') }]);
   } finally { write.mockRestore(); }
 });
-it('loads both complete seed documents independently with their viewpoints', () => {
+it('loads all complete seed documents independently with their viewpoints', () => {
   const documents = INITIAL_GALLERY.map(entry => createSpatialDocument(entry.source));
-  expect(INITIAL_GALLERY.map(entry => entry.title)).toEqual(['LePapayer', 'Salouis']);
-  expect(documents.map(doc => doc.diagnostics)).toEqual([[], []]);
-  expect(documents.map(doc => viewPoints(doc).length)).toEqual([7, 3]);
+  expect(INITIAL_GALLERY.map(entry => entry.title)).toEqual(['LePapayer', 'Salouis', 'Ngor']);
+  expect(documents.map(doc => doc.diagnostics)).toEqual([[], [], []]);
+  expect(documents.map(doc => viewPoints(doc).length)).toEqual([7, 3, 2]);
   expect(INITIAL_GALLERY[0].source).not.toContain('salouis/');
   expect(INITIAL_GALLERY[1].source).not.toContain('lepapayer/');
 });
@@ -62,7 +62,7 @@ it('refreshes the bundled LePapayer in saved galleries while retaining imported 
   localStorage.setItem('xyzdsl-gallery', JSON.stringify([
     { id: 'lepapayer', title: 'LePapayer', source: 'old bundled source' }, custom,
   ]));
-  const expected = [INITIAL_GALLERY[0], custom];
+  const expected = [INITIAL_GALLERY[0], custom, INITIAL_GALLERY[2]];
   expect(readGallery()).toEqual(expected);
   expect(JSON.parse(localStorage.getItem('xyzdsl-gallery')!)).toEqual(expected);
 });
@@ -74,4 +74,10 @@ it('offers a local copy of the chosen document without changing the gallery', ()
   fireEvent.click(buttons[1].querySelectorAll('button')[1]);
   expect(edit).toHaveBeenCalledWith(INITIAL_GALLERY[1]);
   expect(change).not.toHaveBeenCalled();
+});
+
+it('adds Ngor to an existing bundled gallery only once', () => {
+  localStorage.setItem('xyzdsl-gallery', JSON.stringify(INITIAL_GALLERY.slice(0, 2)));
+  expect(readGallery().map(entry => entry.id)).toEqual(['lepapayer', 'salouis', 'ngor']);
+  expect(readGallery().filter(entry => entry.id === 'ngor')).toEqual([INITIAL_GALLERY[2]]);
 });

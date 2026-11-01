@@ -1,0 +1,43 @@
+"Ngor/+1+530c/+1+270c/+1+490c" : "box-shell: 1d #B6A684; box-shell-top: 1d white; box-shell-back: 1d #b68322; box-partition: 1d #fffdd0; box-shell-sizing: inside; observable: true;"
+
+"Ngor/Lighting/+23d+801m/+1901m+5c/+195c+861m":"geometry: sphere; light-source: true; light-color: #ffffff; light-intensity: 10; light-distance: 0; rotation: 0, 0, 0"
+
+"Ngor/EdgeMoulding/+0+90c/++20c/+0+20c":"surface: walls; model: ngor/edge_moulding.glb; repeat: x; repeat-edge: clip; reset-axes: 0,180,0"
+"Ngor/TileSkirting/+0+30c/+0+7c/+0+2c":"surface: walls; model: ngor/tile_skirting.glb; repeat: x; repeat-gap: 1m; repeat-edge: clip;"
+"Ngor/FloorTiling/+0+60c/+0+60c/+0+1c":"surface: bottom; reset-axes: 90,0,0; model: ngor/staggered_tile.glb; repeat: x,y; repeat-edge: clip;"
+
+"Ngor/FrontOpening/+0+12c/+0+205c/+354c+94c":"self-origin: outside; operation: subtraction;"
+"Ngor/KitchenOpening/+340c+96c/+0+205c/+0+12c":"self-origin: outside; operation: subtraction;"
+"Ngor/HallOpening/++12c/+0+205c/+0+103c":"self-origin: outside; operation: subtraction;"
+"Ngor/WindowOpening/++12c/+101c+105c/+293c+145c":"self-origin: outside; operation: subtraction;"
+"Ngor/CentreMoulding/+2339m+73c/+268c+2c/+2077m+73c" : "model: ngor/centre_moulding.glb"
+
+"Ngor/CeilingLamp/+2449m+48c/+202c+67c/+2217m+43c" : "model: ngor/ceiling_lamp.glb"
+
+"Ngor/WallLamp/+0+3d/+221c+25c/+5d+24c" : "model: ngor/wall_lamp.glb; reset-axes: 0, 90,0;"
+
+"Ngor/FrontDoor/+0+19c/+0+205c/+354c+94c":"self-origin: outside; model: ngor/front_door.glb; reset-axes: 0, 270, 0;"
+
+"Ngor/KitchenDoor/+34d+96c/+0+205c/+0+27c":"self-origin: outside; model: ngor/door.glb;"
+
+"Ngor/WindowUnit/++12c/+101c+105c/+293c+145c":"self-origin: outside; model: ngor/double_window.glb; reset-axes: 0,270,0;"
+
+"Ngor/Sofa/+21d+248c/+0+82c/+1563m+186c" : "model: ngor/sofa.glb; rotation: 0, -9, 0"
+"Ngor/Rug/+2104m+169c/+3c+1c/+2458m+149c" : "model: ngor/rug.glb; rotation: 0, 90, 0"
+"Ngor/CoffeeTable/+226c+125c/+0+4d/+2861m+6d" : "model: ngor/coffee_table.glb; rotation: 0, 180, 0"
+"Ngor/OrchidPlant/+2829m+1d/+376m+24c/+311c+1d" : "model: ngor/orchid_plant.glb; rotation: 0, 0, 0"
+"Ngor/TVUnit/+2444m+89c/+9d+51c/+4839m+12c" : "model: ngor/tv_unit.glb; rotation: 0, 180, 0"
+"Ngor/TVConsole/+2086m+16d/+0+46c/+4477m+41c" : "model: ngor/tv_console.glb; rotation: 0, 180, 0"
+"Ngor/SideTable/+749m+48c/+1c+65c/+444c+69c" : "model: ngor/side_table.glb; rotation: 0, 90, 0"
+"Ngor/FloralArt/+639m+7d/+125c+5d/+485c+2c" : "model: ngor/floral_art.glb; rotation: 0, 180, 0"
+"Ngor/LoungeCurtain/+4118m+19d/+0+22d/+319c+401m" : "model: ngor/lounge_curtain.glb; rotation: 0, 270, 0"
+"Ngor/DinningTable/+261m+16d/+0+79c/+111c+9d" : "model: ngor/dinning_table.glb; rotation: 0, 90, 0"
+"Ngor/DinningChair/+561m+44c/+0+88c/+131c+53c" : "model: ngor/dinning_chair.glb; rotation: 0, 90, 0"
+"Ngor/DinningChair1/+861m+44c/+0+88c/+61c+53c" : "model: ngor/dinning_chair.glb; rotation: 0, 0, 0"
+"Ngor/DinningChair2/+1161m+44c/+0+88c/+131c+53c" : "model: ngor/dinning_chair.glb; rotation: 0, 270, 0"
+"Ngor/DinningChair3/+861m+44c/+0+88c/+191c+53c" : "model: ngor/dinning_chair.glb; rotation: 0, 180, 0"
+"Ngor/MonsteraPlant/+971m+199m/+771m+397m/+14d+262m" : "model: ngor/monstera_plant.glb; rotation: 0, 0, 0"
+"Ngor/PinkArt/+1081m+5d/+1221m+7d/+0+4c" : "model: ngor/pink_art.glb; rotation: 0, 0, 0"
+"Ngor/BlueArt/+1831m+5d/+1221m+7d/+0+4c" : "model: ngor/blue_art.glb; rotation: 0, 0, 0"
+"Ngor/POV+1/+259m+1d/+1+1d/+4066m+1d" : "view-point: true; rotation: 0,-45,0"
+"Ngor/POV+2/+4859m+1d/+1+1d/+366m+1d" : "view-point: true; rotation: 0,145,0"
