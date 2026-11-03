@@ -4,9 +4,9 @@ import salouis from './salouis.xyzdsl?raw';
 import { migrateBoxShell } from '../xyzdsl/migrateBoxShell';
 export interface GalleryDocument { id: string; title: string; source: string }
 export const INITIAL_GALLERY: GalleryDocument[] = [
-  { id: 'lepapayer', title: 'LePapayer', source: lepapayer },
-  { id: 'salouis', title: 'Salouis', source: salouis },
-  { id: 'ngor', title: 'Ngor', source: ngor },
+  { id: 'lepapayer', title: 'Dakar/Ouest Foire', source: lepapayer },
+  { id: 'salouis', title: 'Saint Louis/Vauvert', source: salouis },
+  { id: 'ngor', title: 'Dakar/Ngor', source: ngor },
 ];
 export function preferredViewerSource(remoteSource: string, localDraft: string) {
   return remoteSource.trim() ? remoteSource : localDraft;
@@ -17,13 +17,14 @@ export function readGallery(): GalleryDocument[] {
     if (Array.isArray(stored) && stored.every(item => item && typeof item.id === 'string' && typeof item.title === 'string' && typeof item.source === 'string')) {
       const migrated = stored.map(item => ({
         ...item,
+        title: INITIAL_GALLERY.find(entry => entry.id === item.id)?.title ?? item.title,
         source: item.id === 'lepapayer' ? lepapayer : migrateBoxShell(item.source),
       }));
       // Extend existing bundled collections while preserving empty/custom-only galleries.
       if (migrated.some(item => item.id === 'lepapayer' || item.id === 'salouis') && !migrated.some(item => item.id === 'ngor')) {
         migrated.push(INITIAL_GALLERY[2]);
       }
-      if (migrated.length !== stored.length || migrated.some((item, index) => item.source !== stored[index].source)) {
+      if (migrated.length !== stored.length || migrated.some((item, index) => item.source !== stored[index].source || item.title !== stored[index].title)) {
         try { localStorage.setItem('xyzdsl-gallery', JSON.stringify(migrated)); } catch { /* Still use the saved collection when writes are unavailable. */ }
       }
       return migrated;
