@@ -25,7 +25,7 @@ it('retains a migrated custom gallery when storage cannot be updated', () => {
 });
 it('loads all complete seed documents independently with their viewpoints', () => {
   const documents = INITIAL_GALLERY.map(entry => createSpatialDocument(entry.source));
-  expect(INITIAL_GALLERY.map(entry => entry.title)).toEqual(['Dakar/Ouest Foire', 'Saint Louis/Vauvert', 'Dakar/Ngor']);
+  expect(INITIAL_GALLERY.map(entry => entry.title)).toEqual(['Ouest Foire', 'Vauvert', 'Ngor']);
   expect(documents.map(doc => doc.diagnostics)).toEqual([[], [], []]);
   expect(documents.map(doc => viewPoints(doc).length)).toEqual([7, 3, 2]);
   expect(INITIAL_GALLERY[0].source).not.toContain('salouis/');
@@ -51,7 +51,7 @@ it('starts desktop gallery tours and resets the viewpoint on document changes', 
 it('opens gallery documents without offering removal', () => {
   const onOpen = vi.fn(), onChange = vi.fn();
   const view = render(<GalleryPanel documents={INITIAL_GALLERY} onOpen={onOpen} onChange={onChange} />);
-  fireEvent.click(view.getByText('Saint Louis/Vauvert'));
+  fireEvent.click(view.getByText('Vauvert'));
   expect(onOpen).toHaveBeenCalledWith(1);
   expect(view.queryByLabelText(/Remove .* from gallery/)).toBeNull();
   expect(onChange).not.toHaveBeenCalled();

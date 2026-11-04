@@ -4,9 +4,9 @@ import salouis from './salouis.xyzdsl?raw';
 import { migrateBoxShell } from '../xyzdsl/migrateBoxShell';
 export interface GalleryDocument { id: string; title: string; source: string }
 export const INITIAL_GALLERY: GalleryDocument[] = [
-  { id: 'lepapayer', title: 'Dakar/Ouest Foire', source: lepapayer },
-  { id: 'salouis', title: 'Saint Louis/Vauvert', source: salouis },
-  { id: 'ngor', title: 'Dakar/Ngor', source: ngor },
+  { id: 'lepapayer', title: 'Ouest Foire', source: lepapayer },
+  { id: 'salouis', title: 'Vauvert', source: salouis },
+  { id: 'ngor', title: 'Ngor', source: ngor },
 ];
 export function preferredViewerSource(remoteSource: string, localDraft: string) {
   return remoteSource.trim() ? remoteSource : localDraft;

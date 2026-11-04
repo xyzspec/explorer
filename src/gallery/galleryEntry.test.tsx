@@ -27,7 +27,7 @@ it.each([false, true])('opens the gallery before remote sources on mobile=%s', m
   if (!mobile) {
     fireEvent.click(view.getByText('Edit'));
     fireEvent.click(view.getByText('View'));
-    expect(view.getByText('Dakar/Ouest Foire')).toBeTruthy();
+    expect(view.getByText('Ouest Foire')).toBeTruthy();
   }
 });
 it('falls back to remote sources, then the draft when remote sources disappear', () => {
@@ -48,11 +48,11 @@ it('opens a direct link in isolation with its name and returns to the gallery', 
   const view = render(<App />);
   expect(view.getByTestId('scene').textContent).toContain('Sal/');
   expect(view.getByTestId('scene').textContent).not.toContain('Pap/');
-  expect(document.title).toBe('Saint Louis/Vauvert');
+  expect(document.title).toBe('Vauvert');
   expect(view.getByTestId('scene').getAttribute('data-gallery-traversal')).toBe('false');
   expect(view.getByTestId('scene').getAttribute('data-force-tour')).toBe('true');
   expect(view.queryByRole('button', { name: 'Next gallery document' })).toBeNull();
-  expect(view.getByRole('button', { name: 'Copy link to Saint Louis/Vauvert' })).toBeTruthy();
+  expect(view.getByRole('button', { name: 'Copy link to Vauvert' })).toBeTruthy();
   fireEvent.click(view.getByText('Back to gallery'));
   expect(window.location.search).toBe('');
   expect(view.getByTestId('scene').getAttribute('data-gallery-traversal')).toBe('true');
@@ -70,5 +70,5 @@ it('shows unavailable links explicitly and offers a return to the gallery', () =
   expect(view.getByText('Gallery document unavailable')).toBeTruthy();
   expect(view.queryByTestId('scene')).toBeNull();
   fireEvent.click(view.getByText('Back to gallery'));
-  expect(view.getByText('Dakar/Ouest Foire')).toBeTruthy();
+  expect(view.getByText('Ouest Foire')).toBeTruthy();
 });

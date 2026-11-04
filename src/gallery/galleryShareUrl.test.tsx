@@ -12,7 +12,7 @@ import { createPublicKeyShareUrl } from '../transactions/publicKeyShareUrl';
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 it('creates compact bundled links that work without local storage and remove conflicting keys', () => {
   const link = createGalleryShareUrl(INITIAL_GALLERY[1], 'https://example.com/viewer?pk=abc&other=yes#old');
-  expect(link).toBe('https://example.com/viewer?other=yes&gallery=Saint+Louis/Vauvert');
+  expect(link).toBe('https://example.com/viewer?other=yes&gallery=Vauvert');
   expect(readGalleryLink(link, []).document).toEqual(INITIAL_GALLERY[1]);
   expect(galleryHomeUrl(link)).toBe('https://example.com/viewer?other=yes');
 });
@@ -34,24 +34,31 @@ it('copies an item link with accessible feedback', async () => {
   const writeText = vi.fn().mockResolvedValue(undefined);
   Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
   const view = render(<GalleryShareButton document={INITIAL_GALLERY[1]} />);
-  fireEvent.click(view.getByRole('button', { name: 'Copy link to Saint Louis/Vauvert' }));
+  fireEvent.click(view.getByRole('button', { name: 'Copy link to Vauvert' }));
   await waitFor(() => expect(view.getByRole('status').textContent).toBe('Link copied'));
-  expect(new URL(writeText.mock.calls[0][0]).searchParams.get('gallery')).toBe('Saint Louis/Vauvert');
+  expect(new URL(writeText.mock.calls[0][0]).searchParams.get('gallery')).toBe('Vauvert');
 });
 it('offers a selectable link when clipboard access fails', async () => {
   Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) } });
   const view = render(<GalleryShareButton document={INITIAL_GALLERY[0]} />);
-  fireEvent.click(view.getByRole('button', { name: 'Copy link to Dakar/Ouest Foire' }));
-  await waitFor(() => expect(view.getByLabelText('Share link for Dakar/Ouest Foire')).toBeTruthy());
+  fireEvent.click(view.getByRole('button', { name: 'Copy link to Ouest Foire' }));
+  await waitFor(() => expect(view.getByLabelText('Share link for Ouest Foire')).toBeTruthy());
   expect(view.getByRole('status').textContent).toBe('Copy the link below');
 });
 
 it('uses the renamed links while preserving legacy bundled links', () => {
-  const names = ['Dakar/Ouest+Foire', 'Saint+Louis/Vauvert', 'Dakar/Ngor'];
+  const names = ['Ouest+Foire', 'Vauvert', 'Ngor'];
   INITIAL_GALLERY.forEach((entry, index) => {
     const link = createGalleryShareUrl(entry, 'https://example.com/');
     expect(link).toBe('https://example.com/?gallery=' + names[index]);
     expect(readGalleryLink(link, []).document).toEqual(entry);
     expect(readGalleryLink('https://example.com/?gallery=' + entry.id, []).document).toEqual(entry);
+  });
+});
+
+it('resolves previous location-based links to the renamed documents', () => {
+  const previous = ['Dakar/Ouest+Foire', 'Saint+Louis/Vauvert', 'Dakar/Ngor'];
+  previous.forEach((name, index) => {
+    expect(readGalleryLink('https://example.com/?gallery=' + name, []).document).toEqual(INITIAL_GALLERY[index]);
   });
 });

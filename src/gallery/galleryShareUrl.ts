@@ -2,6 +2,11 @@ import { INITIAL_GALLERY, type GalleryDocument } from './gallery';
 
 export const GALLERY_SHARE_PARAM = 'gallery';
 const DOCUMENT_FRAGMENT_PARAM = 'gallery-document';
+const LEGACY_GALLERY_NAMES: Record<string, string> = {
+  'Dakar/Ouest Foire': 'lepapayer',
+  'Saint Louis/Vauvert': 'salouis',
+  'Dakar/Ngor': 'ngor',
+};
 
 export function createGalleryShareUrl(document: GalleryDocument, href: string): string {
   const url = new URL(href);
@@ -31,7 +36,7 @@ export function readGalleryLink(href: string, documents: readonly GalleryDocumen
     } catch { /* Invalid links show the unavailable state rather than another document. */ }
     return { requested: true, document: undefined };
   }
-  const bundled = INITIAL_GALLERY.find(entry => entry.id === id || entry.title === id);
+  const bundled = INITIAL_GALLERY.find(entry => entry.id === id || entry.title === id || entry.id === LEGACY_GALLERY_NAMES[id]);
   return { requested: true, document: bundled ?? documents.find(entry => entry.id === id) };
 }
 
