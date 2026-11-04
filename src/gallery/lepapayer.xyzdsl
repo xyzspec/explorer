@@ -21,7 +21,7 @@
 "Pap/MainDoor/+26d+1/+0+22d/+387c+21c":"model: lepapayer/oak_door.glb"
 "Pap/MainOpening/+270c+80c/+0+210c/+397c+1c":"operation: subtraction"
 "Pap/LeftWindow/+0+1d/+100c+115c/+47c+292c":"operation: subtraction"
-"LeftCurtain/+61c+3208m/+103c+239c/+1258m+15d":"model: lepapayer/new_curtain.glb; rotation: 0, 90, 0"
+"LeftCurtain/+61c+3208m/+93c+239c/+1258m+15d":"model: lepapayer/beige_curtains.glb; rotation: 0, 90, 0"
 
 "POV+Entrance/+54d+1d/+2+1d/+38d+1d":"view-point: true; rotation: 0, 0, 0"
 "POV+Lounge/+44d+1d/+2+1d/+2d+1d":"view-point: true; rotation: 0, 153, 0"
