@@ -16,21 +16,23 @@
 
 "Ngor/WallLamp/+0+3d/+221c+25c/+5d+24c" : "model: ngor/wall_lamp.glb; reset-axes: 0, 90,0;"
 
-"Ngor/FrontDoor/+0+19c/+0+205c/+354c+94c":"self-origin: outside; model: ngor/front_door.glb; reset-axes: 0, 270, 0;"
+"Ngor/FrontDoor/+0+21c/+0+217c/+345c+104c":"self-origin: outside; model: ngor/front_door.glb; reset-axes: 0, 270, 0;"
 
-"Ngor/KitchenDoor/+34d+96c/+0+205c/+0+27c":"self-origin: outside; model: ngor/door.glb;"
+"Ngor/KitchenDoor/+34d+11d/+0+205c/+0+18c":"self-origin: outside; model: ngor/kitchen_door.glb;"
 
 "Ngor/WindowUnit/++12c/+101c+105c/+293c+145c":"self-origin: outside; model: ngor/double_window.glb; reset-axes: 0,270,0;"
 
 "Ngor/Sofa/+21d+248c/+0+82c/+1563m+186c" : "model: ngor/sofa.glb; rotation: 0, -9, 0"
 "Ngor/Rug/+2104m+169c/+3c+1c/+2458m+149c" : "model: ngor/rug.glb; rotation: 0, 90, 0"
 "Ngor/CoffeeTable/+226c+125c/+0+4d/+2861m+6d" : "model: ngor/coffee_table.glb; rotation: 0, 180, 0"
-"Ngor/OrchidPlant/+2829m+1d/+376m+24c/+311c+1d" : "model: ngor/orchid_plant.glb; rotation: 0, 0, 0"
+"Ngor/OrchidPlant/+2829m+2d/+376m+37c/+311c+18c" : "model: ngor/orchid_plant.glb; rotation: 0, 90, 0"
 "Ngor/TVUnit/+2444m+89c/+9d+51c/+4839m+12c" : "model: ngor/tv_unit.glb; rotation: 0, 180, 0"
 "Ngor/TVConsole/+2086m+16d/+0+46c/+4477m+41c" : "model: ngor/tv_console.glb; rotation: 0, 180, 0"
 "Ngor/SideTable/+749m+48c/+1c+65c/+444c+69c" : "model: ngor/side_table.glb; rotation: 0, 90, 0"
 "Ngor/FloralArt/+639m+7d/+125c+5d/+485c+2c" : "model: ngor/floral_art.glb; rotation: 0, 180, 0"
-"Ngor/LoungeCurtain/+4118m+19d/+0+22d/+319c+401m" : "model: ngor/lounge_curtain.glb; rotation: 0, 270, 0"
+"Ngor/FramelessMirror/+5238m+9c/+31c+156c/+106c+611m" : "model: ngor/frameless_mirror.glb; reset-axes: 0, 90, 90"
+"Ngor/AirConditioner/+4778m+83c/+21d+29c/+166c+211m" : "model: ngor/air_conditioner.glb; rotation: 0, 270, 0"
+"Ngor/LoungeCurtain/+4238m+199c/+0+23d/+319c+331m" : "model: ngor/lounge_curtain.glb; rotation: 0, 270, 0"
 "Ngor/DinningTable/+261m+16d/+0+79c/+111c+9d" : "model: ngor/dinning_table.glb; rotation: 0, 90, 0"
 "Ngor/DinningChair/+561m+44c/+0+88c/+131c+53c" : "model: ngor/dinning_chair.glb; rotation: 0, 90, 0"
 "Ngor/DinningChair1/+861m+44c/+0+88c/+61c+53c" : "model: ngor/dinning_chair.glb; rotation: 0, 0, 0"

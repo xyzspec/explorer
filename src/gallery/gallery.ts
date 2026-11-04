@@ -18,7 +18,7 @@ export function readGallery(): GalleryDocument[] {
       const migrated = stored.map(item => ({
         ...item,
         title: INITIAL_GALLERY.find(entry => entry.id === item.id)?.title ?? item.title,
-        source: item.id === 'lepapayer' ? lepapayer : migrateBoxShell(item.source),
+        source: item.id === 'lepapayer' ? lepapayer : item.id === 'ngor' ? ngor : migrateBoxShell(item.source),
       }));
       // Extend existing bundled collections while preserving empty/custom-only galleries.
       if (migrated.some(item => item.id === 'lepapayer' || item.id === 'salouis') && !migrated.some(item => item.id === 'ngor')) {

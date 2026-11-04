@@ -81,3 +81,9 @@ it('adds Ngor to an existing bundled gallery only once', () => {
   expect(readGallery().map(entry => entry.id)).toEqual(['lepapayer', 'salouis', 'ngor']);
   expect(readGallery().filter(entry => entry.id === 'ngor')).toEqual([INITIAL_GALLERY[2]]);
 });
+
+it('refreshes saved Ngor documents to the current bundled source', () => {
+  localStorage.setItem('xyzdsl-gallery', JSON.stringify([{ id: 'ngor', title: 'Ngor', source: 'old source' }]));
+  expect(readGallery()).toEqual([INITIAL_GALLERY[2]]);
+  expect(JSON.parse(localStorage.getItem('xyzdsl-gallery')!)).toEqual([INITIAL_GALLERY[2]]);
+});
