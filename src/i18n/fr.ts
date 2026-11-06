@@ -1,5 +1,15 @@
 /** English source messages are stable keys; user content and XYZDSL syntax stay unchanged. */
 export const fr: Record<string, string> = {
+  "Details for": "Détails de",
+  "Hide details": "Masquer les détails",
+  "Details": "Détails",
+  "generated": "générés",
+  "Generated item selected": "Élément généré sélectionné",
+  "Generated geometry": "Géométrie générée",
+  "definitions. Generated geometry is inside Details.": "définitions. La géométrie générée se trouve dans Détails.",
+  "Find definition": "Rechercher une définition",
+  "No matching definitions.": "Aucune définition correspondante.",
+
   "Replace your current local draft with this gallery document?": "Remplacer votre brouillon local actuel par ce document de la galerie ?",
   "Edit local copy": "Modifier une copie locale",
   "Tap to look around": "Touchez pour regarder autour",

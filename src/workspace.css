@@ -1747,3 +1747,23 @@ button {
 }
 /* R3F measures the transformed bounds; keep its drawing surface filling the card. */
 .gallery-scene-card canvas { width: 100% !important; height: 100% !important; }
+
+.xyzdsl-definition-hint { color: #94a3b8; font-size: 0.78rem; }
+.xyzdsl-definition-search { width: 100%; box-sizing: border-box; margin-bottom: 0.65rem; }
+.xyzdsl-definition-details-toggle { padding: 0.2rem 0.4rem; font-size: 0.75rem; }
+.xyzdsl-definition-details { margin: 0.35rem 0 0.5rem 2rem; color: #cbd5e1; font-size: 0.8rem; overflow-wrap: anywhere; }
+.xyzdsl-definition-details p { margin: 0.4rem 0; }
+.xyzdsl-definition-details summary { cursor: pointer; padding: 0.4rem 0; }
+.xyzdsl-definition-details ul { max-height: 16rem; overflow: auto; padding-left: 1.2rem; }
+.xyzdsl-definition-details button { text-align: left; overflow-wrap: anywhere; max-width: 100%; }
+.xyzdsl-definition-details button[aria-current='true'] { outline: 2px solid #60a5fa; }
+.xyzdsl-tree-view button:focus-visible, .xyzdsl-tree-view summary:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+.xyzdsl-definition-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; color: #93c5fd; font-size: 0.72rem; }
+.xyzdsl-definition-search { border: 1px solid #475569; border-radius: 0.35rem; padding: 0.5rem; color: #f1f5f9; background: #0f172a; }
+.xyzdsl-definition-search::placeholder { color: #94a3b8; }
+.xyzdsl-tree-view button:disabled { opacity: 0.45; cursor: default; }
+.xyzdsl-definition-details-toggle { border: 1px solid #334155; border-radius: 0.3rem; background: #172337; color: #b8cee6; }
+.xyzdsl-definition-details-toggle:hover { background: #24364f; color: #f1f5f9; }
+.xyzdsl-tree-view .section-heading-row { flex-wrap: wrap; }
+.xyzdsl-definition-details-toggle { max-width: 100%; white-space: normal; text-align: left; }
+.xyzdsl-tree-item, .xyzdsl-definition-details { min-width: 0; }

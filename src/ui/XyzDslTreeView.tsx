@@ -1,8 +1,8 @@
+import { useEffect, useMemo, useState } from 'react';
 import { t, useLocale } from '../i18n';
-import { useMemo, useState } from 'react';
 import type { SpatialDocument } from '../model/SpatialDocument';
-import type { CsgExpression } from '../model/csg';
 import type { SpatialNode } from '../model/SpatialNode';
+import { definitionTree, type DefinitionEntry } from './definitionTree';
 
 interface XyzDslTreeViewProps {
   document: SpatialDocument;
@@ -10,216 +10,106 @@ interface XyzDslTreeViewProps {
   onSelectNode?: (id: string) => void;
 }
 
-function displayName(node: SpatialNode): string {
-  if (node.namespacePath) {
-    return node.namespacePath.replace(/\/$/, '');
-  }
-
-  return node.id;
+function flatten(entries: DefinitionEntry[]): DefinitionEntry[] {
+  return entries.flatMap(entry => [entry, ...flatten(entry.children)]);
 }
 
-function metadataValue<T>(node: SpatialNode, key: string): T | undefined {
-  return node.metadata?.[key] as T | undefined;
-}
-
-function sortedTreeIds(nodes: SpatialNode[]): string[] {
-  return nodes.flatMap((node) => [node.id, ...sortedTreeIds(node.children ?? [])]);
-}
-
-function hasNestedNodes(nodes: SpatialNode[]): boolean {
-  return nodes.some((node) => (node.children?.length ?? 0) > 0 || hasNestedNodes(node.children ?? []));
-}
-
-function rotationDegrees(node: SpatialNode): string {
-  return node.transform.rotation.map((radian) => Math.round((radian * 180) / Math.PI)).join(', ');
-}
-
-function geometryLabel(node: SpatialNode): string {
-  const parts: string[] = [node.geometry.kind];
-
-  if (node.geometry.operation) {
-    parts.push(`operation ${node.geometry.operation}`);
-  }
-
-  if (node.geometry['box-radius'] !== undefined) {
-    parts.push(`box-radius ${node.geometry['box-radius']}`);
-  }
-
-  return parts.join(' · ');
-}
-
-function TreeItem({
-  node,
-  collapsedIds,
-  expressionsByBase,
-  selectedNodeId,
-  onSelectNode,
-  onToggle,
-}: {
-  node: SpatialNode;
-  collapsedIds: Set<string>;
-  expressionsByBase: Map<string, CsgExpression>;
-  selectedNodeId?: string;
-  onSelectNode?: (id: string) => void;
-  onToggle: (id: string) => void;
-}) {
-  useLocale();
-  const children = node.children ?? [];
-  const expression = expressionsByBase.get(node.id);
-  const operations = expression?.operations ?? node.modelCsgOperations ?? [];
-  const hasChildren = children.length > 0 || operations.length > 0;
-  const isCollapsed = collapsedIds.has(node.id);
-  const isSelected = selectedNodeId === node.id;
-  const lineNumber = metadataValue<number>(node, 'lineNumber');
-  const reference = metadataValue<string>(node, 'reference');
-  const csgLabel = node.csgExpressionId ? (node.csgConsumed ? `boolean tool ${node.csgExpressionId}` : node.csgExpressionId) : undefined;
-
-  return (
-    <li className="xyzdsl-tree-item">
-      <div className={`xyzdsl-tree-row${isSelected ? ' is-selected' : ''}`}>
-        {hasChildren ? (
-          <button
-            aria-expanded={!isCollapsed}
-            aria-label={`${isCollapsed ? t("Expand") : t("Collapse")} ${displayName(node)}`}
-            className="xyzdsl-tree-toggle"
-            type="button"
-            onClick={() => onToggle(node.id)}
-          >
-            {isCollapsed ? '▸' : '▾'}
-          </button>
-        ) : (
-          <span className="xyzdsl-tree-spacer" aria-hidden="true" />
-        )}
-
-        <button
-          className="xyzdsl-tree-node-summary"
-          type="button"
-          aria-current={isSelected ? 'true' : undefined}
-          onClick={() => onSelectNode?.(node.id)}
-        >
-          <strong>{displayName(node)}</strong>
-          <span>
-            {node.metadata?.viewPoint ? t("view point") : node.renderable ? t(node.geometry.kind) : t('group')} · {node.box.width} × {node.box.height} × {node.box.depth} {t("at (")}{node.box.x},{' '}
-            {node.box.y}, {node.box.z})
-          </span>
-          {node.renderable ? (
-            <span className="xyzdsl-tree-object-details">
-              {geometryLabel(node)} {t("bounding box:")} {node.box.width} × {node.box.height} × {node.box.depth} {t("at (")}{node.box.x}, {node.box.y},{' '}
-              {node.box.z}{t("); rotation:")} {rotationDegrees(node)}°
-            </span>
-          ) : null}
-        </button>
-
-        <div className="xyzdsl-tree-badges" aria-label={t("Spatial node metadata")}>
-          {lineNumber ? <em>{t("line")} {lineNumber}</em> : null}
-          {node.renderable || node.metadata?.viewPoint ? null : <em>{t("container")}</em>}
-          {reference ? <em>{t("ref")} {reference}</em> : null}
-          {node.geometry.operation ? <em>{t("operation")} {node.geometry.operation}</em> : null}
-          {node.unionGroupId ? <em>{node.unionGroupId}</em> : null}
-          {csgLabel ? <em>{csgLabel}</em> : null}
-        </div>
-      </div>
-
-      {hasChildren && !isCollapsed ? (
-        <ul className="xyzdsl-tree-children">
-          {operations.length > 0 ? (
-            <li className="xyzdsl-tree-composition">
-              <strong>{t("Boolean composition")} · {operations.length} {t(operations.length === 1 ? 'boolean operation' : 'boolean operations')}</strong>
-              <ol>
-                {operations.map((operation, index) => (
-                  <li key={`${operation.tool.id}-${index}`}>
-                    <button
-                      type="button"
-                      className="xyzdsl-tree-node-summary"
-                      aria-current={selectedNodeId === operation.tool.id ? 'true' : undefined}
-                      onClick={() => onSelectNode?.(operation.tool.id)}
-                    >
-                      <span>{t(operation.op)} · {displayName(operation.tool)} · {t(operation.tool.geometry.kind)}</span>
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            </li>
-          ) : null}
-          {children.map((child) => (
-            <TreeItem
-              key={child.id}
-              node={child}
-              expressionsByBase={expressionsByBase}
-              collapsedIds={collapsedIds}
-              selectedNodeId={selectedNodeId}
-              onSelectNode={onSelectNode}
-              onToggle={onToggle}
-            />
-          ))}
-        </ul>
-      ) : null}
-    </li>
-  );
+function kind(node: SpatialNode): string {
+  return node.metadata?.viewPoint ? t('view point') : node.light ? t('light')
+    : node.geometry.operation ? t(node.geometry.operation) : node.model ? t('model')
+    : node.renderable ? t(node.geometry.kind) : t('group');
 }
 
 export function XyzDslTreeView({ document, selectedNodeId, onSelectNode }: XyzDslTreeViewProps) {
   useLocale();
-  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
-  const nodeIds = useMemo(() => sortedTreeIds(document.nodes), [document.nodes]);
-  const expressionsByBase = useMemo(
-    () => new Map(document.csgExpressions.map((expression) => [expression.base.id, expression])),
-    [document.csgExpressions],
-  );
-  const hasCollapsibleNodes = hasNestedNodes(document.nodes) || document.csgExpressions.length > 0
-    || document.renderNodes.some((node) => (node.modelCsgOperations?.length ?? 0) > 0);
+  const roots = useMemo(() => definitionTree(document.nodes), [document.nodes]);
+  const entries = useMemo(() => flatten(roots), [roots]);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [details, setDetails] = useState<Set<string>>(new Set());
+  const [query, setQuery] = useState('');
+  useEffect(() => { setQuery(''); }, [selectedNodeId]);
+  const owner = entries.find(entry => entry.members.some(node => node.id === selectedNodeId));
+  useEffect(() => {
+    if (!owner) return;
+    setCollapsed(current => new Set([...current].filter(id => {
+      const entry = entries.find(item => item.id === id);
+      return !entry || !owner.path.startsWith(`${entry.path}/`);
+    })));
+  }, [owner, entries]);
 
-  function toggleNode(id: string) {
-    setCollapsedIds((current) => {
+  function toggle(set: typeof setCollapsed, id: string) {
+    set(current => {
       const next = new Set(current);
-
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   }
-
-  function expandAll() {
-    setCollapsedIds(new Set());
+  const search = query.trim().toLowerCase();
+  function matches(entry: DefinitionEntry): boolean {
+    return entry.path.toLowerCase().includes(search) || entry.children.some(matches);
   }
-
-  function collapseAll() {
-    setCollapsedIds(new Set(nodeIds));
-  }
-
-  return (
-    <section className="xyzdsl-tree-view" aria-label={t("Spatial declaration tree")}>
-      <div className="section-heading-row">
-        <h2>{t("Definition tree")}</h2>
-        {hasCollapsibleNodes ? (
-          <div className="tree-actions" aria-label={t("Tree display controls")}>
-            <button type="button" onClick={expandAll}> {t("Expand all")} </button>
-            <button type="button" onClick={collapseAll}> {t("Collapse all")} </button>
-          </div>
-        ) : null}
+  function renderEntry(entry: DefinitionEntry) {
+    if (search && !matches(entry)) return null;
+    const selected = owner?.id === entry.id;
+    const generated = entry.members.filter(node => !node.metadata?.attachmentFrame && !node.metadata?.cellFrame
+      && (node.id !== entry.node.id || node.metadata?.repeatSourceId || node.metadata?.surfaceSourceId || node.metadata?.attachedPanelId));
+    const operations = entry.members.flatMap(node =>
+      document.csgExpressions.find(expression => expression.base.id === node.id)?.operations ?? node.modelCsgOperations ?? []);
+    const uniqueOperations = [...new Map(operations.map(operation => [operation.tool.id, operation])).values()];
+    const expanded = search || !collapsed.has(entry.id);
+    const showDetails = details.has(entry.id);
+    return <li key={entry.id} className="xyzdsl-tree-item">
+      <div className={`xyzdsl-tree-row${selected ? ' is-selected' : ''}`}>
+        {entry.children.length ? <button type="button" className="xyzdsl-tree-toggle"
+          disabled={Boolean(search)} aria-expanded={Boolean(expanded)} aria-label={`${expanded ? t('Collapse') : t('Expand')} ${entry.name}`}
+          onClick={() => toggle(setCollapsed, entry.id)}>{expanded ? '▾' : '▸'}</button>
+          : <span className="xyzdsl-tree-spacer" aria-hidden="true" />}
+        <button type="button" className="xyzdsl-tree-node-summary" title={entry.path}
+          aria-current={selected ? 'true' : undefined} onClick={() => onSelectNode?.(entry.node.id)}>
+          <strong>{entry.name}</strong><span>{kind(entry.node)} · {t('line')} {String(entry.node.metadata?.lineNumber ?? '—')}</span>
+        </button>
+        <div className="xyzdsl-definition-actions">
+          <button type="button" className="xyzdsl-definition-details-toggle" aria-expanded={showDetails}
+            aria-label={`${t('Details for')} ${entry.name}`} onClick={() => toggle(setDetails, entry.id)}>
+            {showDetails ? t('Hide details') : t('Details')}
+            {generated.length ? ` · ${generated.length} ${t('generated')}` : ''}
+            {uniqueOperations.length ? ` · ${uniqueOperations.length} ${t('boolean operations')}` : ''}
+          </button>
+          {selected && selectedNodeId !== entry.node.id ? <span>{t('Generated item selected')}</span> : null}
+        </div>
       </div>
-
-      {document.nodes.length === 0 ? (
-        <p>{t("No valid definitions yet.")}</p>
-      ) : (
-        <ul className="xyzdsl-tree-root">
-          {document.nodes.map((node) => (
-            <TreeItem
-              key={node.id}
-              node={node}
-              expressionsByBase={expressionsByBase}
-              collapsedIds={collapsedIds}
-              selectedNodeId={selectedNodeId}
-              onSelectNode={onSelectNode}
-              onToggle={toggleNode}
-            />
-          ))}
-        </ul>
-      )}
-    </section>
-  );
+      {showDetails ? <div className="xyzdsl-definition-details">
+        <p>{entry.path} · {entry.node.box.width} × {entry.node.box.height} × {entry.node.box.depth}</p>
+        {uniqueOperations.length ? <details><summary>{t('Boolean composition')} ({uniqueOperations.length})</summary>
+          <ol>{uniqueOperations.map(operation => <li key={operation.tool.id}>
+            <button type="button" onClick={() => onSelectNode?.(operation.tool.id)}>
+              {t(operation.op)} · {entries.find(item => item.members.some(node => node.id === operation.tool.id))?.name ?? operation.tool.namespacePath ?? operation.tool.id}
+            </button>
+          </li>)}</ol>
+        </details> : null}
+        {generated.length ? <details open={selected && selectedNodeId !== entry.node.id ? true : undefined}>
+          <summary>{t('Generated geometry')} ({generated.length})</summary>
+          <ul>{generated.map(node => <li key={node.id}><button type="button"
+            aria-current={selectedNodeId === node.id ? 'true' : undefined} onClick={() => onSelectNode?.(node.id)}>
+            {node.namespacePath?.replace(`${entry.path}/`, '') ?? node.id}
+          </button></li>)}</ul>
+        </details> : null}
+      </div> : null}
+      {entry.children.length && expanded ? <ul className="xyzdsl-tree-children">{entry.children.map(renderEntry)}</ul> : null}
+    </li>;
+  }
+  return <section className="xyzdsl-tree-view" aria-label={t('Spatial declaration tree')}>
+    <div className="section-heading-row"><h2>{t('Definition tree')}</h2>
+      <div className="tree-actions" aria-label={t('Tree display controls')}>
+        <button type="button" onClick={() => setCollapsed(new Set())}>{t('Expand all')}</button>
+        <button type="button" disabled={Boolean(search)} onClick={() => { setCollapsed(new Set(entries.map(entry => entry.id))); setDetails(new Set()); }}>{t('Collapse all')}</button>
+      </div>
+    </div>
+    <p className="xyzdsl-definition-hint">{entries.length} {t('definitions. Generated geometry is inside Details.')}</p>
+    <input type="search" className="xyzdsl-definition-search" aria-label={t('Find definition')}
+      placeholder={t('Find definition')} value={query} onChange={event => setQuery(event.target.value)} />
+    {!entries.length ? <p>{t('No valid definitions yet.')}</p>
+      : !roots.some(matches) ? <p>{t('No matching definitions.')}</p>
+      : <ul className="xyzdsl-tree-root">{roots.map(renderEntry)}</ul>}
+  </section>;
 }
