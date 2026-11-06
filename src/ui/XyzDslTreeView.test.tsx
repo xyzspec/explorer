@@ -63,3 +63,21 @@ it('keeps boolean relationships behind details while tools remain authored entri
   fireEvent.click(within(summary.parentElement!).getByRole('button', { name: 'subtraction · Cut' }));
   expect(onSelectNode).toHaveBeenCalledWith(document.csgExpressions[0].operations[0].tool.id);
 });
+
+it('uses friendly surface and instance names while retaining selection IDs', () => {
+  setLocale('en');
+  const document = createSpatialDocument(ngor);
+  const onSelectNode = vi.fn();
+  const { container } = render(<XyzDslTreeView document={document} onSelectNode={onSelectNode} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Details for Ngor' }));
+  expect(screen.getByRole('button', { name: 'Floor · surface' })).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Details for FloorTiling' }));
+  const buttons = [...container.querySelectorAll<HTMLButtonElement>('.xyzdsl-definition-details ul button')];
+  const instance = buttons.find(button => button.textContent === 'Instance 1 · Floor')!;
+  expect(instance).toBeTruthy();
+  expect(buttons.every(button => !button.textContent?.includes('#'))).toBe(true);
+  const owner = definitionTree(document.nodes)[0].children.find(entry => entry.name === 'FloorTiling')!;
+  const target = owner.members.find(node => node.namespacePath === instance.title || node.id === instance.title)!;
+  fireEvent.click(instance);
+  expect(onSelectNode).toHaveBeenCalledWith(target.id);
+});

@@ -1,5 +1,14 @@
 /** English source messages are stable keys; user content and XYZDSL syntax stay unchanged. */
 export const fr: Record<string, string> = {
+  "Generated item": "Élément généré",
+  "Instance": "Instance",
+  "surface": "surface",
+  "Back wall": "Mur arrière",
+  "Front wall": "Mur avant",
+  "Right wall": "Mur droit",
+  "Left wall": "Mur gauche",
+  "Ceiling": "Plafond",
+  "Floor": "Sol",
   "Details for": "Détails de",
   "Hide details": "Masquer les détails",
   "Details": "Détails",

@@ -45,3 +45,19 @@ export function definitionTree(nodes: SpatialNode[]): DefinitionEntry[] {
   }
   return roots;
 }
+
+const surfaceNames: Record<string, string> = {
+  bottom: 'Floor', top: 'Ceiling', left: 'Left wall', right: 'Right wall',
+  front: 'Front wall', back: 'Back wall',
+};
+
+/** Keep renderer identifiers out of the visible label; use the resolved surface metadata. */
+export function generatedNodeLabel(node: SpatialNode, index: number, nodesById: Map<string, SpatialNode>, translate: (text: string) => string): string {
+  const ownFace = node.metadata?.surfaceFace as string | undefined;
+  const panel = nodesById.get(node.metadata?.attachedPanelId as string);
+  const face = ownFace ?? panel?.metadata?.surfaceFace as string | undefined;
+  const surface = face && surfaceNames[face] ? translate(surfaceNames[face]) : undefined;
+  if (ownFace && surface) return `${surface} · ${translate('surface')}`;
+  const label = `${translate(node.metadata?.repeatSourceId || node.metadata?.attachedPanelId ? 'Instance' : 'Generated item')} ${index + 1}`;
+  return surface ? `${label} · ${surface}` : label;
+}

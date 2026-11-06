@@ -1767,3 +1767,9 @@ button {
 .xyzdsl-tree-view .section-heading-row { flex-wrap: wrap; }
 .xyzdsl-definition-details-toggle { max-width: 100%; white-space: normal; text-align: left; }
 .xyzdsl-tree-item, .xyzdsl-definition-details { min-width: 0; }
+.xyzdsl-definition-details li button {
+  width: 100%; border: 1px solid transparent; border-radius: 0.3rem;
+  padding: 0.4rem 0.5rem; margin: 0.1rem 0;
+  background: #172337; color: #cbd5e1; font: inherit;
+}
+.xyzdsl-definition-details li button:hover { background: #24364f; color: #f1f5f9; }

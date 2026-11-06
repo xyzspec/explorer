@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { t, useLocale } from '../i18n';
 import type { SpatialDocument } from '../model/SpatialDocument';
 import type { SpatialNode } from '../model/SpatialNode';
-import { definitionTree, type DefinitionEntry } from './definitionTree';
+import { definitionTree, generatedNodeLabel, type DefinitionEntry } from './definitionTree';
 
 interface XyzDslTreeViewProps {
   document: SpatialDocument;
@@ -24,6 +24,7 @@ export function XyzDslTreeView({ document, selectedNodeId, onSelectNode }: XyzDs
   useLocale();
   const roots = useMemo(() => definitionTree(document.nodes), [document.nodes]);
   const entries = useMemo(() => flatten(roots), [roots]);
+  const nodesById = useMemo(() => new Map(entries.flatMap(entry => entry.members.map(node => [node.id, node] as const))), [entries]);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [details, setDetails] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
@@ -89,9 +90,9 @@ export function XyzDslTreeView({ document, selectedNodeId, onSelectNode }: XyzDs
         </details> : null}
         {generated.length ? <details open={selected && selectedNodeId !== entry.node.id ? true : undefined}>
           <summary>{t('Generated geometry')} ({generated.length})</summary>
-          <ul>{generated.map(node => <li key={node.id}><button type="button"
-            aria-current={selectedNodeId === node.id ? 'true' : undefined} onClick={() => onSelectNode?.(node.id)}>
-            {node.namespacePath?.replace(`${entry.path}/`, '') ?? node.id}
+          <ul>{generated.map((node, index) => <li key={node.id}><button type="button"
+            title={node.namespacePath ?? node.id} aria-current={selectedNodeId === node.id ? 'true' : undefined} onClick={() => onSelectNode?.(node.id)}>
+            {generatedNodeLabel(node, index, nodesById, t)}
           </button></li>)}</ul>
         </details> : null}
       </div> : null}
